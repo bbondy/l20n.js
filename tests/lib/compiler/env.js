@@ -19,7 +19,7 @@ describe('Env object', function(){
   });
 
   it('works', function() {
-    env.foo.getString().should.equal('Foo');
+    env.foo.should.equal('Foo');
     env.getFoo.getString().should.equal('Foo');
     (function() {
       env.getBar.getString();
@@ -33,7 +33,7 @@ describe('Env object', function(){
     ast2 = parser.parse(source2);
     env2 = compiler.compile(ast2);
 
-    env.foo.getString().should.equal('Foo');
+    env.foo.should.equal('Foo');
     env.getFoo.getString().should.equal('Foo');
     (function() {
       env.getBar.getString();
