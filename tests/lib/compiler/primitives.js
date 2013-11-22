@@ -30,12 +30,11 @@ describe('Primitives:', function(){
       ].join('\n');
     });
     it('returns the value', function(){
-      var value = env.foo.getString();
-      value.should.equal("Foo");
+      env.foo.should.equal("Foo");
     });
     // Bug 817610 - Optimize a fast path for String entities in the Compiler
     it('is detected to be non-complex (simple)', function(){
-      env.foo.value.should.be.a('string');
+      env.foo.should.be.a('string');
     });
   });
 
