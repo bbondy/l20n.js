@@ -54,7 +54,7 @@ describe('Primitives:', function(){
     });
     // Bug 817610 - Optimize a fast path for String entities in the Compiler
     it('is detected to be maybe-complex', function(){
-      env.bar.value.should.be.a('function');
+      env.bar.value.should.be.a('object');
     });
     it('throws when the referenced entity cannot be found', function(){
       (function() {

@@ -45,7 +45,7 @@ describe('Attributes', function(){
       env.foo.attributes.attr.value.should.be.a('string');
     });
     it('is detected to be maybe-complex', function(){
-      env.foo.attributes.attrComplex.value.should.be.a('function');
+      env.foo.attributes.attrComplex.value.should.be.a('object');
     });
   });
 
