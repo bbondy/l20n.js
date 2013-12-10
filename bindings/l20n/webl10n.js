@@ -3,7 +3,7 @@ define(function (require, exports, module) {
 
 
   var L20n = require('../l20n');
-  var Locale = require('./locale').Locale;
+  var Locale = require('./context').Locale;
   var Context = require('./context').Context;
 
   var isPretranslated = false;
