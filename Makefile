@@ -25,8 +25,7 @@ endif
 
 .PHONY: all
 all:
-	$(NODE) build/Makefile.js buildtime
-	$(NODE) build/Makefile.js runtime
+	$(NODE) build/Makefile.js webl10n
 
 .PHONY: build
 build: install-git-hook
