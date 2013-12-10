@@ -2,12 +2,11 @@ define(function (require, exports, module) {
   'use strict';
 
 
-  var L20n = require('../l20n');
   var Locale = require('./context').Locale;
   var Context = require('./context').Context;
 
   var isPretranslated = false;
-  navigator.mozL10n = L20n.getContext();
+  navigator.mozL10n = new Context();
 
   Context.prototype.language = {
     set code(lang) {
