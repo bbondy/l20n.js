@@ -73,6 +73,7 @@ define(function (require, exports, module) {
 
   function onReady() {
     navigator.mozL10n.isReady = true;
+    navigator.mozL10n.emitter.emit('ready');
     if (!isPretranslated) {
       translateFragment();
     }
