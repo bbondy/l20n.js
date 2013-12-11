@@ -27,6 +27,11 @@ define(function (require, exports, module) {
     }
 
     var ast = {};
+
+    // don't build inline JSON for default language
+    if (navigator.mozL10n.curLanguage == 'en-US') {
+      return {};
+    }
     var elements = getTranslatableChildren(fragment);
 
     for (var i = 0; i < elements.length; i++) {
