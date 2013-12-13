@@ -6,7 +6,6 @@ var colors = require('colors');
 
 var Parser = require('../lib/l20n/parser').Parser;
 var Compiler = require('../lib/l20n/compiler').Compiler;
-var getPluralRule = require('../lib/l20n/plurals').getPluralRule;
 
 program
   .version('0.0.1')
@@ -17,11 +16,6 @@ program
   .option('-l, --with-local', 'Print local entities and attributes')
   .option('-p, --plural <locale>', 'Select the plural rule [en-US]', 'en-US')
   .parse(process.argv);
-
-var parser = new Parser();
-var compiler = new Compiler();
-parser.addEventListener('error', logError);
-compiler.addEventListener('error', logError);
 
 var data = {};
 if (program.data) {
@@ -40,13 +34,6 @@ function color(str, col) {
   return str;
 }
 
-function logError(err) {
-  var error = {};
-  var message  = ': ' + err.message.replace('\n', '');
-  var name = err.name + (err.entry ? ' in ' + err.entry : '');
-  console.warn(color(name + message, ERROR));
-}
-
 function singleline(str) {
   return str.replace(/\n/g, ' ')
             .replace(/\s{3,}/g, ' ')
@@ -54,19 +41,7 @@ function singleline(str) {
 }
 
 function getString(entity) {
-  try {
-    return color(singleline(entity.getString(data)), VALUE);
-  } catch (e) {
-    if (!(e instanceof Compiler.Error)) {
-      logError(e);
-      return color('(' + e.name + ')', FALLBACK);
-    }
-    if (e.source) {
-      return color(singleline(e.source), FALLBACK);
-    } else {
-      return color(entity.id, FALLBACK);
-    }
-  }
+  return color(singleline(entity.getString(data)), VALUE);
 }
 
 function print(entity) {
@@ -88,22 +63,14 @@ function compileAndPrint(err, code) {
   if (err) {
     return console.error('File not found: ' + err.path);
   }
+  var ast;
   if (program.ast) {
-    var ast = code.toString();
+    ast = code.toString();
   } else {
-    var ast = parser.parse(code.toString());
+    ast = Parser.parse(code.toString());
   }
 
-  ast.body['plural'] = {
-    type: 'Macro',
-    args: [{
-      type: 'Identifier',
-      name: 'n'
-    }],
-    expression: getPluralRule(program.plural)
-  };
-
-  var env = compiler.compile(ast);
+  var env = Compiler.compile(ast);
   for (var id in env) {
     if (env[id].expression) {
       continue;

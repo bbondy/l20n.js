@@ -14,9 +14,6 @@ program
   .option('-n, --no-color', 'Print errors to stderr without color')
   .parse(process.argv);
 
-var parser = new Parser();
-parser.addEventListener('error', logError);
-
 function color(str, col) {
   if (program.color) {
     return str[col];
@@ -35,7 +32,7 @@ function print(err, data) {
   if (err) {
     return console.error('File not found: ' + err.path);
   }
-  var ast = parser.parse(data.toString()); 
+  var ast = Parser.parse(data.toString()); 
   if (program.raw) {
     console.log(JSON.stringify(ast, null, 2));
   } else {
