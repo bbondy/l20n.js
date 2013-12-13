@@ -23,7 +23,7 @@ define(function (require, exports, module) {
 
   Context.prototype.getDictionary = function(fragment) {
     if (!fragment) {
-      return this.getLocale().entries;
+      return this.getLocale().ast;
     }
 
     var ast = {};
