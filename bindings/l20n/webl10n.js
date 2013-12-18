@@ -76,6 +76,11 @@ define(function (require, exports, module) {
   }
 
   function onReady() {
+    // XXX find a better way to do this in the runtime
+    if (window.frames) {
+      navigator.mozL10n.getLocale().ast = null;
+    }
+
     navigator.mozL10n.isReady = true;
     navigator.mozL10n.emitter.emit('ready');
     if (!isPretranslated) {
