@@ -6,72 +6,65 @@ define(function (require, exports, module) {
   var Context = require('./context').Context;
 
   var isPretranslated = false;
+
   navigator.mozL10n = new Context();
 
-  Context.prototype.language = {
-    set code(lang) {
-      var locale = navigator.mozL10n.getLocale();
-      if (locale) {
-        locale.entries = {};
+  expandContext();
+
+  if (window.document) {
+    bootstrap();
+  }
+
+
+  function bootstrap() {
+    isPretranslated = document.documentElement.lang === navigator.language;
+
+    if (isPretranslated) {
+      waitFor('complete', function() {
+        window.setTimeout(initLocale);
+      });
+    } else {
+      waitFor('interactive', initLocale);
+    }
+  }
+
+  function waitFor(state, callback) {
+    if (document.readyState === state) {
+      callback();
+      return;
+    }
+    document.addEventListener('readystatechange', function l10n_onrsc() {
+      if (document.readyState === state) {
+        document.removeEventListener('readystatechange', l10n_onrsc);
+        callback();
       }
-      navigator.mozL10n.curLanguage = lang;
-      loadResources();
-    },
-    get code() { return navigator.mozL10n.curLanguage; },
-    direction: 'ltr',
-  };
-
-  Context.prototype.getDictionary = function(fragment) {
-    if (!fragment) {
-      return this.getLocale().ast;
-    }
-
-    var ast = {};
-
-    // don't build inline JSON for default language
-    if (navigator.mozL10n.curLanguage == 'en-US') {
-      return {};
-    }
-    var elements = getTranslatableChildren(fragment);
-
-    for (var i = 0; i < elements.length; i++) {
-      var attrs = getL10nAttributes(elements[i]);
-      var val = this.get(attrs.id);
-      ast[attrs.id] = val;
-    }
-    return ast;
-  };
-  Context.prototype.translate = translateFragment;
-
-  Context.prototype.localize = localizeElement;
-
-  if (typeof(document) !== 'undefined') {
-    window.addEventListener('load', function() {
-      if (document.documentElement.lang) {
-        isPretranslated = true;
-      }
-      setTimeout(loadResources, 1000);
     });
   }
 
-  function loadResources() {
-
+  function initLocale(forcedLocale) {
     var locale = new Locale();
 
-    var nodes = document.querySelectorAll('link[type="application/l10n"]');
-    var iniLoads = nodes.length;
+    var head = document.head;
 
-    function onIniLoaded() {
-      iniLoads--;
-      if (iniLoads === 0) {
+    var resLinks = document.querySelectorAll('link[type="application/l10n"]');
+    var l10nLoads = resLinks.length;
+
+    function onL10nLoaded() {
+      l10nLoads--;
+      if (l10nLoads <= 0) {
         navigator.mozL10n.locales[navigator.mozL10n.curLanguage] = locale;
         onReady();
       }
     }
 
-    for (var i = 0; i < nodes.length; i++) {
-      var path = nodes[i].getAttribute('href');
-      locale.loadResource(path, onIniLoaded);
+    if (l10nLoads === 0) {
+      onL10nLoaded();
+      return;
+    }
+
+    for (var i = 0; i < resLinks.length; i++) {
+      var path = resLinks[i].getAttribute('href');
+      locale.loadResource(path, onL10nLoaded);
     }
   }
 
@@ -85,6 +78,87 @@ define(function (require, exports, module) {
     navigator.mozL10n.fireReady();
     fireLocalizedEvent();
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  function expandContext() {
+    Context.prototype.language = {
+      set code(lang) {
+        var locale = navigator.mozL10n.getLocale();
+        if (locale) {
+          locale.entries = {};
+        }
+        navigator.mozL10n.curLanguage = lang;
+        initLocale(true);
+      },
+      get code() { return navigator.mozL10n.curLanguage; },
+      direction: 'ltr',
+    };
+
+    Context.prototype.getDictionary = function(fragment) {
+      if (!fragment) {
+        return this.getLocale().ast;
+      }
+
+      var ast = {};
+
+      // don't build inline JSON for default language
+      if (navigator.mozL10n.curLanguage == 'en-US') {
+        return {};
+      }
+      var elements = getTranslatableChildren(fragment);
+
+      for (var i = 0; i < elements.length; i++) {
+        var attrs = getL10nAttributes(elements[i]);
+        var val = this.get(attrs.id);
+        ast[attrs.id] = val;
+      }
+      return ast;
+    };
+    Context.prototype.translate = translateFragment;
+
+    Context.prototype.localize = localizeElement;
+  }
+
+
 
   function fireLocalizedEvent() {
     var event = document.createEvent('Event');
