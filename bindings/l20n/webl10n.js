@@ -6,17 +6,46 @@ define(function (require, exports, module) {
   var Context = require('./context').Context;
 
   var isPretranslated = false;
-
   navigator.mozL10n = new Context();
 
-  expandContext();
+  Context.prototype.language = {
+    set code(lang) {
+      var locale = navigator.mozL10n.getLocale();
+      if (locale) {
+        locale.entries = {};
+      }
+      navigator.mozL10n.curLanguage = lang;
+      initLocale(true);
+    },
+    get code() { return navigator.mozL10n.curLanguage; },
+    direction: 'ltr',
+  };
+
+  Context.prototype.getDictionary = function(fragment) {
+    if (!fragment) {
+      return this.getLocale().ast;
+    }
+
+    var ast = {};
+
+    // don't build inline JSON for default language
+    if (navigator.mozL10n.curLanguage == 'en-US') {
+      return {};
+    }
+    var elements = getTranslatableChildren(fragment);
+
+    for (var i = 0; i < elements.length; i++) {
+      var attrs = getL10nAttributes(elements[i]);
+      var val = this.get(attrs.id);
+      ast[attrs.id] = val;
+    }
+    return ast;
+  };
+  Context.prototype.translate = translateFragment;
+
+  Context.prototype.localize = localizeElement;
 
   if (window.document) {
-    bootstrap();
-  }
-
-
-  function bootstrap() {
     isPretranslated = document.documentElement.lang === navigator.language;
 
     if (isPretranslated) {
@@ -79,94 +108,12 @@ define(function (require, exports, module) {
     fireLocalizedEvent();
   }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  function expandContext() {
-    Context.prototype.language = {
-      set code(lang) {
-        var locale = navigator.mozL10n.getLocale();
-        if (locale) {
-          locale.entries = {};
-        }
-        navigator.mozL10n.curLanguage = lang;
-        initLocale(true);
-      },
-      get code() { return navigator.mozL10n.curLanguage; },
-      direction: 'ltr',
-    };
-
-    Context.prototype.getDictionary = function(fragment) {
-      if (!fragment) {
-        return this.getLocale().ast;
-      }
-
-      var ast = {};
-
-      // don't build inline JSON for default language
-      if (navigator.mozL10n.curLanguage == 'en-US') {
-        return {};
-      }
-      var elements = getTranslatableChildren(fragment);
-
-      for (var i = 0; i < elements.length; i++) {
-        var attrs = getL10nAttributes(elements[i]);
-        var val = this.get(attrs.id);
-        ast[attrs.id] = val;
-      }
-      return ast;
-    };
-    Context.prototype.translate = translateFragment;
-
-    Context.prototype.localize = localizeElement;
-  }
-
-
-
   function fireLocalizedEvent() {
     var event = document.createEvent('Event');
     event.initEvent('localized', false, false);
     event.language = 'en-US';
     window.dispatchEvent(event);
   }
-
 
   function translateFragment(element) {
 
