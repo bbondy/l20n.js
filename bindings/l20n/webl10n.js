@@ -1,7 +1,3 @@
-define(function (require, exports, module) {
-  'use strict';
-
-
   var Locale = require('./context').Locale;
   var Context = require('./context').Context;
 
@@ -156,6 +152,3 @@ define(function (require, exports, module) {
 
     translateElement(element);
   }
-
-});
-
