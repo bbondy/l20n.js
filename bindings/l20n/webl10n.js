@@ -16,7 +16,7 @@ define(function (require, exports, module) {
       if (navigator.mozL10n.resLinks.length) {
         initLocale(true);
       } else {
-        initDocumentLocalization(initLocale);
+        initDocumentLocalization(initLocale.bind(this, true));
       }
     },
     get code() { return navigator.mozL10n.curLanguage; },
@@ -65,6 +65,13 @@ define(function (require, exports, module) {
       });
     } else {
       waitFor('interactive', initDocumentLocalization.bind(this, initLocale));
+    }
+
+    if ('mozSettings' in navigator && navigator.mozSettings) {
+      navigator.mozSettings.addObserver('language.current', function(event) {
+        navigator.mozL10n.curLanguage = event.settingValue;
+        initLocale(true);
+      });
     }
   }
 
@@ -137,7 +144,12 @@ define(function (require, exports, module) {
     });
   };
 
-  function initLocale() {
+  function initLocale(forced) {
+    if (navigator.mozL10n.getLocale()) {
+      onReady(forced);
+      return;
+    }
+
     var locale = new Locale();
 
     var code = navigator.mozL10n.curLanguage;
@@ -148,7 +160,7 @@ define(function (require, exports, module) {
       l10nLoads--;
       if (l10nLoads <= 0) {
         navigator.mozL10n.locales[code] = locale;
-        onReady();
+        onReady(forced);
       }
     }
 
@@ -222,10 +234,11 @@ define(function (require, exports, module) {
     };
   }
 
-  function onReady() {
+  function onReady(forced) {
     navigator.mozL10n.isReady = true;
     navigator.mozL10n.emitter.emit('ready');
-    if (!isPretranslated) {
+    if (forced || !isPretranslated) {
+      console.log('translating whole document into '+ navigator.mozL10n.curLanguage);
       translateFragment();
     }
 
@@ -236,7 +249,7 @@ define(function (require, exports, module) {
   function fireLocalizedEvent() {
     var event = document.createEvent('Event');
     event.initEvent('localized', false, false);
-    event.language = 'en-US';
+    event.language = navigator.mozL10n.curLanguage;
     window.dispatchEvent(event);
   }
 
