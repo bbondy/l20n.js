@@ -24,6 +24,6 @@ module.exports = {
       'lib/l20n/context.js',
       'bindings/l20n/webl10n.js',
     ],
-    dest: 'dist/webl10n/l20n.js',
+    dest: 'dist/webl10n/l10n.js',
   },
 };

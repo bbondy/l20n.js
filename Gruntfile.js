@@ -25,16 +25,11 @@ module.exports = function (grunt) {
   }
 
   grunt.initConfig({
-    compile: require('./grunt/config/compile'),
     concat: require('./grunt/config/concat'),
     clean: require('./grunt/config/clean'),
-    copy: require('./grunt/config/copy'),
-    docco: require('./grunt/config/docco'),
     jshint: require('./grunt/config/lint/jshint'),
-    jscoverage: require('./grunt/config/jscoverage'),
     jsonlint: require('./grunt/config/lint/jsonlint'),
     'merge-conflict': require('./grunt/config/lint/merge-conflict'),
-    mochaTest: require('./grunt/config/mocha-test'),
     shell: require('./grunt/config/shell'),
     uglify: require('./grunt/config/uglify'),
     watch: require('./grunt/config/watch'),
@@ -54,12 +49,6 @@ module.exports = function (grunt) {
   // Load all grunt tasks matching the `grunt-*` pattern.
   require('load-grunt-tasks')(grunt);
 
-  // Load all custom tasks.
-  grunt.loadTasks('grunt/tasks');
-
-
-  grunt.registerTask('install-git-hook', 'copy:install-git-hook');
-
   grunt.registerTask('server', [
     'build',
     'watch',
@@ -74,29 +63,11 @@ module.exports = function (grunt) {
 
   grunt.registerTask('build', [
     'clean',
-    'compile:html',
-    'uglify:html',
-  ]);
-
-  grunt.registerTask('gh-pages', [
-    'docco',
-    'shell:gh-pages',
+    'concat',
   ]);
 
   grunt.registerTask('reference', ['shell:reference']);
   grunt.registerTask('perf', ['shell:perf']);
-
-  grunt.registerTask('test', ['mochaTest:dot']);
-
-  // TODO first make sure `dist/docs` exists.
-  grunt.registerTask('coverage', function () {
-    process.env.L20N_COV = 1;
-    grunt.file.mkdir('dist/docs');
-    grunt.task.run([
-      'jscoverage',
-      'mochaTest:coverage',
-    ]);
-  });
 
   grunt.registerTask('default', [
     'concat',

@@ -9,14 +9,9 @@ module.exports = {
       screw_ie8: true,
     },
   },
-  html: {
+  webl10n: {
     files: {
-      'dist/html/l20n.min.js': ['dist/html/l20n.js'],
-    }
-  },
-  gaia: {
-    files: {
-      'dist/gaia/l20n.min.js': ['dist/gaia/l20n.js'],
+      'dist/webl10n/l10n.min.js': ['dist/webl10n/l10n.js'],
     }
   },
 };
