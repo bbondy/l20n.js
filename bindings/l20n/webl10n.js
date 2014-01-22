@@ -11,11 +11,8 @@ define(function (require, exports, module) {
 
   Context.prototype.language = {
     set code(lang) {
-      var locale = navigator.mozL10n.getLocale();
-      if (locale) {
-        locale.entries = {};
-      }
       navigator.mozL10n.curLanguage = lang;
+
       if (navigator.mozL10n.resLinks.length) {
         initLocale(true);
       } else {
@@ -126,10 +123,13 @@ define(function (require, exports, module) {
       }
 
       var ini = parseINI(source, url);
-
       var pos = navigator.mozL10n.resLinks.indexOf(url);
 
-      var args = [pos, 1].concat(ini.resources);
+      var patterns = [];
+      for (var i = 0; i < ini.resources.length; i++) {
+        patterns.push(ini.resources[i].replace('en-US', '{{locale}}'));
+      }
+      var args = [pos, 1].concat(patterns);
 
       navigator.mozL10n.resLinks.splice.apply(navigator.mozL10n.resLinks, args);
 
@@ -140,12 +140,14 @@ define(function (require, exports, module) {
   function initLocale() {
     var locale = new Locale();
 
+    var code = navigator.mozL10n.curLanguage;
+
     var l10nLoads = navigator.mozL10n.resLinks.length;
 
     function onL10nLoaded() {
       l10nLoads--;
       if (l10nLoads <= 0) {
-        navigator.mozL10n.locales[navigator.mozL10n.curLanguage] = locale;
+        navigator.mozL10n.locales[code] = locale;
         onReady();
       }
     }
@@ -161,10 +163,10 @@ define(function (require, exports, module) {
 
       switch (type) {
         case 'json':
-          io.loadJSON(path.replace('{{locale}}', 'en-US'), locale.addJSONResource.bind(locale, onL10nLoaded));
+          io.loadJSON(path.replace('{{locale}}', code), locale.addJSONResource.bind(locale, onL10nLoaded));
           break;
         case 'properties':
-          io.load(path, locale.addPropResource.bind(locale, onL10nLoaded));
+          io.load(path.replace('{{locale}}', code), locale.addPropResource.bind(locale, onL10nLoaded));
           break;
       }
     }
