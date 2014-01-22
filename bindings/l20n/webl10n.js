@@ -59,6 +59,7 @@ define(function (require, exports, module) {
   if (window.document) {
     isPretranslated = document.documentElement.lang === navigator.language;
 
+    navigator.mozL10n.curLanguage = navigator.language;
     if (isPretranslated) {
       waitFor('complete', function() {
         window.setTimeout(initDocumentLocalization.bind(this, initLocale));
@@ -238,7 +239,6 @@ define(function (require, exports, module) {
     navigator.mozL10n.isReady = true;
     navigator.mozL10n.emitter.emit('ready');
     if (forced || !isPretranslated) {
-      console.log('translating whole document into '+ navigator.mozL10n.curLanguage);
       translateFragment();
     }
 
