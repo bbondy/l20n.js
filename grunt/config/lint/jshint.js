@@ -16,10 +16,4 @@ module.exports = {
       jshintrc: 'lib/.jshintrc',
     },
   },
-  tests: {
-    src: ['tests/**/*.js'],
-    options: {
-      jshintrc: 'tests/.jshintrc',
-    },
-  },
 };

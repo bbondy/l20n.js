@@ -12,7 +12,7 @@ module.exports = {
 
   'jshint.src': {
     files: ['lib/**/*.js'],
-    tasks: ['jshint:srcFiltered'],
+    tasks: ['jshint:srcFiltered', 'concat'],
   },
 
   jsonlint: {
@@ -23,12 +23,4 @@ module.exports = {
     ],
     tasks: ['jsonlint:allFiltered'],
   },
-
-  mochaTest: {
-    files: [
-      'lib/**/*.js',
-      'tests/**/*.js',
-    ],
-    tasks: ['mochaTest:dot']
-  }
 };
