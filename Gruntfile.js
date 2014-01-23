@@ -11,7 +11,8 @@ module.exports = function (grunt) {
   // processed during initial runs.
   var filteredTasks = [
     ['jshint', 'main'],
-    ['jshint', 'src'],
+    ['jshint', 'lib'],
+    ['jshint', 'bindings'],
     ['jsonlint', 'all'],
   ];
 
@@ -58,7 +59,8 @@ module.exports = function (grunt) {
 
   grunt.registerTask('lint', [
     'jshint:main',
-    'jshint:src',
+    'jshint:lib',
+    'jshint:bindings',
     'jsonlint:all',
   ]);
 

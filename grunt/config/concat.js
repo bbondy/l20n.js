@@ -12,6 +12,9 @@ module.exports = {
       src = src.replace(
         /exports.*;/g,
         '');
+      src = src.replace(
+        /'use strict';/g,
+        '');
       return src;
     }
   },

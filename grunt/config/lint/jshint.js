@@ -10,10 +10,16 @@ module.exports = {
       jshintrc: '.jshintrc',
     },
   },
-  src: {
-    src: ['{lib,src}/**/*.js'],
+  lib: {
+    src: ['lib/**/*.js'],
     options: {
       jshintrc: 'lib/.jshintrc',
+    },
+  },
+  bindings: {
+    src: ['bindings/**/*.js'],
+    options: {
+      jshintrc: 'bindings/.jshintrc',
     },
   },
 };

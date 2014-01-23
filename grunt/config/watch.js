@@ -10,9 +10,18 @@ module.exports = {
     tasks: ['jshint:mainFiltered'],
   },
 
-  'jshint.src': {
-    files: ['lib/**/*.js'],
-    tasks: ['jshint:srcFiltered', 'concat'],
+  'jshint.lib': {
+    files: [
+      'lib}/**/*.js',
+    ],
+    tasks: ['jshint:libFiltered', 'concat'],
+  },
+
+  'jshint.bindings': {
+    files: [
+      'bindings/**/*.js',
+    ],
+    tasks: ['jshint:bindingsFiltered', 'concat'],
   },
 
   jsonlint: {
