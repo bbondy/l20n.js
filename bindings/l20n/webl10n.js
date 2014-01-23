@@ -45,11 +45,12 @@ define(function (require, exports, module) {
   };
 
   Context.prototype.init = function() {
+    var EventEmitter = require('./events').EventEmitter;
     this.curLanguage = 'en-US';
-    this.whenComplete = null;
     this.isReady = false;
     this.locales = {};
     this.resLinks = [];
+    this.emitter = new EventEmitter();
   }
 
   Context.prototype.translate = translateFragment;
