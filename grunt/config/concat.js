@@ -5,7 +5,7 @@ module.exports = {
     separator: '',
     banner: '(function(window, undefined) {\n \'use strict\';\n\n',
     footer: '})(this);',
-    process: function(src, filepath) {
+    process: function(src) {
       src = src.replace(
         /var .* = require.*;/g,
         '');
