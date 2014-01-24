@@ -1,6 +1,4 @@
-define(function (require, exports, module) {
   'use strict';
-
 
   var Locale = require('./context').Locale;
   var Context = require('./context').Context;
@@ -31,7 +29,7 @@ define(function (require, exports, module) {
     var ast = {};
 
     // don't build inline JSON for default language
-    if (navigator.mozL10n.curLanguage == 'en-US') {
+    if (navigator.mozL10n.curLanguage === 'en-US') {
       return {};
     }
     var elements = getTranslatableChildren(fragment);
@@ -316,6 +314,3 @@ define(function (require, exports, module) {
 
     translateElement(element);
   }
-
-});
-
