@@ -12,7 +12,7 @@ module.exports = {
 
   'jshint.lib': {
     files: [
-      'lib}/**/*.js',
+      'lib/**/*.js',
     ],
     tasks: ['jshint:libFiltered', 'concat'],
   },
