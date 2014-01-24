@@ -3,7 +3,10 @@
 module.exports = {
   options: {
     separator: '',
-    banner: '(function(window, undefined) {\n \'use strict\';\n\n',
+    banner: '' +
+      '/* -*- Mode: js; js-indent-level: 2; indent-tabs-mode: nil -*- */\n' +
+      '/* vim: set shiftwidth=2 tabstop=2 autoindent cindent expandtab: */\n' +
+      '(function(window, undefined) {\n \'use strict\';\n\n',
     footer: '})(this);',
     process: function(src) {
       src = src.replace(
