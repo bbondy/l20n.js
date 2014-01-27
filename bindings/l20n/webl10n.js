@@ -5,71 +5,72 @@
   var io = require('./platform/io');
 
   var isPretranslated = false;
-  navigator.mozL10n = new Context();
+  var ctx = new Context();
+  navigator.mozL10n = {};
 
-  Context.prototype.language = {
+  navigator.mozL10n.language = {
     set code(lang) {
-      navigator.mozL10n.curLanguage = lang;
+      ctx.curLanguage = lang;
 
-      if (navigator.mozL10n.resLinks.length) {
+      if (ctx.resLinks.length) {
         initLocale(true);
       } else {
         initDocumentLocalization(initLocale.bind(this, true));
       }
     },
-    get code() { return navigator.mozL10n.curLanguage; },
+    get code() { return ctx.curLanguage; },
     direction: 'ltr',
   };
 
-  Context.prototype.getDictionary = function(fragment) {
+  navigator.mozL10n.getDictionary = function(fragment) {
     if (!fragment) {
-      return this.getLocale().ast;
+      return ctx.getLocale().ast;
     }
 
     var ast = {};
 
     // don't build inline JSON for default language
-    if (navigator.mozL10n.curLanguage === 'en-US') {
+    if (ctx.curLanguage === 'en-US') {
       return {};
     }
     var elements = getTranslatableChildren(fragment);
 
     for (var i = 0; i < elements.length; i++) {
       var attrs = getL10nAttributes(elements[i]);
-      var val = this.get(attrs.id);
+      var val = ctx.get(attrs.id);
       ast[attrs.id] = val;
     }
     return ast;
   };
 
-  Context.prototype.init = function() {
-    var EventEmitter = require('./events').EventEmitter;
-    this.curLanguage = 'en-US';
-    this.isReady = false;
-    this.locales = {};
-    this.resLinks = [];
-    this.emitter = new EventEmitter();
-  }
+  navigator.mozL10n.init = function() {
+    ctx = new Context();
+  };
 
-  Context.prototype.translate = translateFragment;
+  navigator.mozL10n.translate = translateFragment;
 
-  Context.prototype.localize = localizeElement;
+  navigator.mozL10n.localize = localizeElement;
+
+  navigator.mozL10n.get = ctx.get.bind(ctx);
+
+  navigator.mozL10n.ready = ctx.ready.bind(ctx);
+
 
   if (window.document) {
     isPretranslated = document.documentElement.lang === navigator.language;
 
-    navigator.mozL10n.curLanguage = navigator.language;
+    ctx.curLanguage = navigator.language;
     if (isPretranslated) {
       waitFor('complete', function() {
-        window.setTimeout(initDocumentLocalization.bind(this, initLocale));
+        window.setTimeout(initDocumentLocalization.bind(null, initLocale));
       });
     } else {
-      waitFor('interactive', initDocumentLocalization.bind(this, initLocale));
+      waitFor('interactive', initDocumentLocalization.bind(null, initLocale));
     }
 
     if ('mozSettings' in navigator && navigator.mozSettings) {
       navigator.mozSettings.addObserver('language.current', function(event) {
-        navigator.mozL10n.curLanguage = event.settingValue;
+        ctx.curLanguage = event.settingValue;
         initLocale(true);
       });
     }
@@ -93,12 +94,13 @@
 
     var resLinks = head.querySelectorAll('link[type="application/l10n"]');
     var iniLinks = [];
+    var i;
 
-    for (var i = 0; i < resLinks.length; i++) {
+    for (i = 0; i < resLinks.length; i++) {
       var url = resLinks[i].getAttribute('href');
-      navigator.mozL10n.resLinks.push(url);
+      ctx.resLinks.push(url);
       var type = url.substr(url.lastIndexOf('.')+1);
-      if (type == 'ini') {
+      if (type === 'ini') {
         iniLinks.push(url);
       }
     }
@@ -116,7 +118,7 @@
       return;
     }
 
-    for (var i = 0; i < iniLinks.length; i++) {
+    for (i = 0; i < iniLinks.length; i++) {
       loadINI(iniLinks[i], onIniLoaded);
     }
 
@@ -130,7 +132,7 @@
       }
 
       var ini = parseINI(source, url);
-      var pos = navigator.mozL10n.resLinks.indexOf(url);
+      var pos = ctx.resLinks.indexOf(url);
 
       var patterns = [];
       for (var i = 0; i < ini.resources.length; i++) {
@@ -138,28 +140,28 @@
       }
       var args = [pos, 1].concat(patterns);
 
-      navigator.mozL10n.resLinks.splice.apply(navigator.mozL10n.resLinks, args);
+      ctx.resLinks.splice.apply(ctx.resLinks, args);
 
       cb();
     });
-  };
+  }
 
   function initLocale(forced) {
-    if (navigator.mozL10n.getLocale()) {
+    if (ctx.getLocale()) {
       onReady(forced);
       return;
     }
 
     var locale = new Locale();
 
-    var code = navigator.mozL10n.curLanguage;
+    var code = ctx.curLanguage;
 
-    var l10nLoads = navigator.mozL10n.resLinks.length;
+    var l10nLoads = ctx.resLinks.length;
 
     function onL10nLoaded() {
       l10nLoads--;
       if (l10nLoads <= 0) {
-        navigator.mozL10n.locales[code] = locale;
+        ctx.locales[code] = locale;
         onReady(forced);
       }
     }
@@ -169,23 +171,25 @@
       return;
     }
 
-    for (var i = 0; i < navigator.mozL10n.resLinks.length; i++) {
-      var path = navigator.mozL10n.resLinks[i];
+    for (var i = 0; i < ctx.resLinks.length; i++) {
+      var path = ctx.resLinks[i];
       var type = path.substr(path.lastIndexOf('.')+1);
 
       switch (type) {
         case 'json':
-          io.loadJSON(path.replace('{{locale}}', code), locale.addJSONResource.bind(locale, onL10nLoaded));
+          io.loadJSON(path.replace('{{locale}}', code),
+                      locale.addJSONResource.bind(locale, onL10nLoaded));
           break;
         case 'properties':
-          io.load(path.replace('{{locale}}', code), locale.addPropResource.bind(locale, onL10nLoaded));
+          io.load(path.replace('{{locale}}', code),
+                  locale.addPropResource.bind(locale, onL10nLoaded));
           break;
       }
     }
   }
 
   function relativePath(baseUrl, url) {
-    if (url[0] == '/') {
+    if (url[0] === '/') {
       return url;
     }
 
@@ -206,25 +210,26 @@
   };
 
   function parseINI(source, iniPath) {
-    var entries = source.split(iniPatterns['entry']);
+    var entries = source.split(iniPatterns.entry);
     var locales = ['en-US'];
     var genericSection = true;
     var uris = [];
+    var match;
 
     for (var i = 0; i < entries.length; i++) {
       var line = entries[i];
       // we only care about en-US resources
       if (genericSection && iniPatterns['import'].test(line)) {
-        var match = iniPatterns['import'].exec(line);
+        match = iniPatterns['import'].exec(line);
         var uri = relativePath(iniPath, match[1]);
         uris.push(uri);
         continue;
       }
 
       // but we need the list of all locales in the ini, too
-      if (iniPatterns['section'].test(line)) {
+      if (iniPatterns.section.test(line)) {
         genericSection = false;
-        var match = iniPatterns['section'].exec(line);
+        match = iniPatterns.section.exec(line);
         locales.push(match[1]);
       }
     }
@@ -235,20 +240,20 @@
   }
 
   function onReady(forced) {
-    navigator.mozL10n.isReady = true;
-    navigator.mozL10n.emitter.emit('ready');
+    ctx.isReady = true;
+    ctx.emitter.emit('ready');
     if (forced || !isPretranslated) {
       translateFragment();
     }
 
-    navigator.mozL10n.fireReady();
+    ctx.fireReady();
     fireLocalizedEvent();
   }
 
   function fireLocalizedEvent() {
     var event = document.createEvent('Event');
     event.initEvent('localized', false, false);
-    event.language = navigator.mozL10n.curLanguage;
+    event.language = ctx.curLanguage;
     window.dispatchEvent(event);
   }
 
@@ -260,7 +265,7 @@
 
     for (var i = 0; i < nodes.length; i++) {
       var l10nId = nodes[i].getAttribute('data-l10n-id');
-      nodes[i].textContent = navigator.mozL10n.get(l10nId);
+      nodes[i].textContent = ctx.get(l10nId);
     }
     return [];
   }
@@ -290,7 +295,7 @@
       return;
     }
 
-    element.textContent = navigator.mozL10n.get(l10n.id);
+    element.textContent = ctx.get(l10n.id);
     return true;
   }
 
