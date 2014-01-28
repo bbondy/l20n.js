@@ -1,6 +1,5 @@
   'use strict';
 
-  var Locale = require('./context').Locale;
   var Context = require('./context').Context;
   var io = require('./platform/io');
 
@@ -179,52 +178,10 @@
   }
 
   function initLocale(forced) {
-    if (ctx.getLocale()) {
+    if (ctx.isReady) {
       onReady(forced);
-      return;
-    }
-
-    var locale = new Locale();
-
-    var code = ctx.currentLocale;
-
-    var l10nLoads = ctx.resLinks.length;
-
-    function onL10nLoaded() {
-      l10nLoads--;
-      if (l10nLoads <= 0) {
-        ctx.locales[code] = locale;
-        onReady(forced);
-      }
-    }
-
-    if (l10nLoads === 0) {
-      onL10nLoaded();
-      return;
-    }
-
-    function onJSONLoaded(err, json) {
-      locale.addAST(json);
-      onL10nLoaded();
-    }
-
-    function onPropLoaded(err, source) {
-      locale.addPropResource(source);
-      onL10nLoaded();
-    }
-
-    for (var i = 0; i < ctx.resLinks.length; i++) {
-      var path = ctx.resLinks[i].replace('{{locale}}', code);
-      var type = path.substr(path.lastIndexOf('.')+1);
-
-      switch (type) {
-        case 'json':
-          io.loadJSON(path, onJSONLoaded);
-          break;
-        case 'properties':
-          io.load(path, onPropLoaded);
-          break;
-      }
+    } else {
+      ctx.freeze(onReady.bind(null, forced));
     }
   }
 
@@ -280,13 +237,10 @@
   }
 
   function onReady(forced) {
-    ctx.isReady = true;
-    ctx.emitter.emit('ready');
     if (forced || !isPretranslated) {
       translateFragment();
     }
 
-    ctx.fireReady();
     fireLocalizedEvent();
   }
 
