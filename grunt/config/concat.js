@@ -27,6 +27,7 @@ module.exports = {
       'lib/l20n/events.js',
       'lib/l20n/parser.js',
       'lib/l20n/compiler.js',
+      'lib/l20n/locale.js',
       'lib/l20n/context.js',
       'bindings/l20n/webl10n.js',
     ],
