@@ -10,7 +10,7 @@
 
   navigator.mozL10n.language = {
     set code(lang) {
-      ctx.curLanguage = lang;
+      ctx.currentLocale = lang;
 
       if (ctx.resLinks.length) {
         initLocale(true);
@@ -18,7 +18,9 @@
         initDocumentLocalization(initLocale.bind(this, true));
       }
     },
-    get code() { return ctx.curLanguage; },
+    get code() {
+      return ctx.currentLocale;
+    },
     direction: 'ltr',
   };
 
@@ -30,7 +32,7 @@
     var ast = {};
 
     // don't build inline JSON for default language
-    if (ctx.curLanguage === 'en-US') {
+    if (ctx.currentLocale === 'en-US') {
       return {};
     }
     var elements = getTranslatableChildren(fragment);
@@ -59,7 +61,7 @@
   if (window.document) {
     isPretranslated = document.documentElement.lang === navigator.language;
 
-    ctx.curLanguage = navigator.language;
+    ctx.currentLocale = navigator.language;
     if (isPretranslated) {
       waitFor('complete', function() {
         window.setTimeout(initDocumentLocalization.bind(null, initLocale));
@@ -70,7 +72,7 @@
 
     if ('mozSettings' in navigator && navigator.mozSettings) {
       navigator.mozSettings.addObserver('language.current', function(event) {
-        ctx.curLanguage = event.settingValue;
+        ctx.currentLocale = event.settingValue;
         initLocale(true);
       });
     }
@@ -154,7 +156,7 @@
 
     var locale = new Locale();
 
-    var code = ctx.curLanguage;
+    var code = ctx.currentLocale;
 
     var l10nLoads = ctx.resLinks.length;
 
@@ -253,7 +255,7 @@
   function fireLocalizedEvent() {
     var event = document.createEvent('Event');
     event.initEvent('localized', false, false);
-    event.language = ctx.curLanguage;
+    event.language = ctx.currentLocale;
     window.dispatchEvent(event);
   }
 
