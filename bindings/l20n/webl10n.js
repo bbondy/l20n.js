@@ -62,12 +62,17 @@
     isPretranslated = document.documentElement.lang === navigator.language;
 
     ctx.currentLocale = navigator.language;
+
     if (isPretranslated) {
       waitFor('complete', function() {
         window.setTimeout(initDocumentLocalization.bind(null, initLocale));
       });
     } else {
-      waitFor('interactive', initDocumentLocalization.bind(null, initLocale));
+      if (document.readyState === 'complete') {
+        window.setTimeout(initDocumentLocalization.bind(null, initLocale));
+      } else {
+        waitFor('interactive', pretranslate);
+      }
     }
 
     if ('mozSettings' in navigator && navigator.mozSettings) {
@@ -89,6 +94,31 @@
         callback();
       }
     });
+  }
+
+  function pretranslate() {
+    if (inlineLocalization()) {
+      waitFor('complete', function() {
+        window.setTimeout(initDocumentLocalization.bind(null, initLocale));
+      });
+    } else {
+      initDocumentLocalization(initLocale);
+    }
+  }
+
+  function inlineLocalization() {
+    var locale = new Locale();
+    var body = document.body;
+    var script = body.querySelector('script[type="application/l10n"][lang="' + ctx.currentLocale + '"]');
+    if (script) {
+      locale.addJSONResource(null, null, JSON.parse(script.innerHTML));
+      ctx.locales[ctx.currentLocale] = locale;
+      translateFragment();
+      ctx.locales[ctx.currentLocale] = null;
+      isPretranslated = true;
+      return true;
+    }
+    return false;
   }
 
   function initDocumentLocalization(cb) {
