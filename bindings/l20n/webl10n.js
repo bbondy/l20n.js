@@ -10,12 +10,7 @@
   navigator.mozL10n.language = {
     set code(lang) {
       ctx.currentLocale = lang;
-
-      if (ctx.resLinks.length) {
-        initLocale(true);
-      } else {
-        initDocumentLocalization(initLocale.bind(this, true));
-      }
+      initLocale(true);
     },
     get code() {
       return ctx.currentLocale;
@@ -52,6 +47,10 @@
 
   navigator.mozL10n.ready = ctx.ready.bind(ctx);
 
+  navigator.mozL10n.init = function(callback) {
+    ctx = new Context();
+    initDocumentLocalization(callback);
+  };
 
   if (window.document) {
     isPretranslated = document.documentElement.lang === navigator.language;
