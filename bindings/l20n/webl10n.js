@@ -133,17 +133,16 @@
       }
     }
     var iniLoads = iniLinks.length;
+    if (iniLoads === 0) {
+      cb();
+      return;
+    }
 
     function onIniLoaded() {
       iniLoads--;
       if (iniLoads <= 0) {
         cb();
       }
-    }
-
-    if (iniLoads === 0) {
-      cb();
-      return;
     }
 
     for (i = 0; i < iniLinks.length; i++) {
