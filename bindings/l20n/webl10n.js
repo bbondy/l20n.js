@@ -111,7 +111,7 @@
     var body = document.body;
     var script = body.querySelector('script[type="application/l10n"][lang="' + ctx.currentLocale + '"]');
     if (script) {
-      locale.addJSONResource(null, null, JSON.parse(script.innerHTML));
+      locale.addAST(JSON.parse(script.innerHTML));
       ctx.locales[ctx.currentLocale] = locale;
       translateFragment();
       ctx.locales[ctx.currentLocale] = null;
@@ -203,18 +203,26 @@
       return;
     }
 
+    function onJSONLoaded(err, json) {
+      locale.addAST(json);
+      onL10nLoaded();
+    }
+
+    function onPropLoaded(err, source) {
+      locale.addPropResource(source);
+      onL10nLoaded();
+    }
+
     for (var i = 0; i < ctx.resLinks.length; i++) {
-      var path = ctx.resLinks[i];
+      var path = ctx.resLinks[i].replace('{{locale}}', code);
       var type = path.substr(path.lastIndexOf('.')+1);
 
       switch (type) {
         case 'json':
-          io.loadJSON(path.replace('{{locale}}', code),
-                      locale.addJSONResource.bind(locale, onL10nLoaded));
+          io.loadJSON(path, onJSONLoaded);
           break;
         case 'properties':
-          io.load(path.replace('{{locale}}', code),
-                  locale.addPropResource.bind(locale, onL10nLoaded));
+          io.load(path, onPropLoaded);
           break;
       }
     }
