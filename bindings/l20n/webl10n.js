@@ -44,10 +44,6 @@
     return ast;
   };
 
-  navigator.mozL10n.init = function() {
-    ctx = new Context();
-  };
-
   navigator.mozL10n.translate = translateFragment;
 
   navigator.mozL10n.localize = localizeElement;
@@ -106,18 +102,19 @@
   }
 
   function inlineLocalization() {
-    var locale = new Locale();
     var body = document.body;
-    var script = body.querySelector('script[type="application/l10n"][lang="' + ctx.currentLocale + '"]');
-    if (script) {
-      locale.addAST(JSON.parse(script.innerHTML));
-      ctx.locales[ctx.currentLocale] = locale;
-      translateFragment();
-      ctx.locales[ctx.currentLocale] = null;
-      isPretranslated = true;
-      return true;
+    var script = body.querySelector('script[type="application/l10n"][lang="' +
+                                    ctx.currentLocale + '"]');
+    if (!script) {
+      return false;
     }
-    return false;
+    var locale = ctx.getLocale();
+    locale.addAST(JSON.parse(script.innerHTML));
+    locale.isReady = true;
+    translateFragment();
+    locale.isReady = false;
+    isPretranslated = true;
+    return true;
   }
 
   function initDocumentLocalization(cb) {
