@@ -175,11 +175,7 @@
   }
 
   function initLocale(forced) {
-    if (ctx.isReady) {
-      onReady(forced);
-    } else {
-      ctx.freeze(onReady.bind(null, forced));
-    }
+    ctx.freeze(onReady.bind(null, forced));
   }
 
   function relativePath(baseUrl, url) {
