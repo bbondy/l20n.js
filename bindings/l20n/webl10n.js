@@ -19,11 +19,19 @@
   };
 
   navigator.mozL10n.getDictionary = function(fragment) {
-    if (!fragment) {
-      return ctx.getLocale().ast;
-    }
-
     var ast = {};
+
+    if (!fragment) {
+      var sourceLocale = ctx.getLocale(ctx.supportedLocales.length - 1);
+      if (!sourceLocale.isReady) {
+        sourceLocale.build(null);
+      }
+      // iterate over all strings in en-US
+      for (var id in sourceLocale.ast) {
+        ast[id] = ctx.getEntitySource(id);
+      }
+      return ast;
+    }
 
     // don't build inline JSON for default language
     if (ctx.currentLocale === 'en-US') {
@@ -33,7 +41,7 @@
 
     for (var i = 0; i < elements.length; i++) {
       var attrs = getL10nAttributes(elements[i]);
-      var val = ctx.get(attrs.id);
+      var val = ctx.getEntitySource(attrs.id);
       ast[attrs.id] = val;
     }
     return ast;
