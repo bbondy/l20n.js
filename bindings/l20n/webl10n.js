@@ -5,8 +5,15 @@
 
   var isPretranslated = false;
   var ctx = new Context();
-  navigator.mozL10n = {};
 
+
+  /* mozL10n public API */
+
+  navigator.mozL10n = {};
+  navigator.mozL10n.translate = translateFragment;
+  navigator.mozL10n.localize = localizeElement;
+  navigator.mozL10n.get = ctx.get.bind(ctx);
+  navigator.mozL10n.ready = ctx.ready.bind(ctx);
   navigator.mozL10n.language = {
     set code(lang) {
       ctx.setLocale(lang);
@@ -23,48 +30,21 @@
     }
   };
 
-  navigator.mozL10n.getDictionary = function(fragment) {
-    var ast = {};
 
-    if (!fragment) {
-      var sourceLocale = ctx.getLocale(ctx.supportedLocales.length - 1);
-      if (!sourceLocale.isReady) {
-        sourceLocale.build(null);
+  /* Initialization */
+
+  function waitFor(state, callback) {
+    if (document.readyState === state) {
+      callback();
+      return;
+    }
+    document.addEventListener('readystatechange', function l10n_onrsc() {
+      if (document.readyState === state) {
+        document.removeEventListener('readystatechange', l10n_onrsc);
+        callback();
       }
-      // iterate over all strings in en-US
-      for (var id in sourceLocale.ast) {
-        ast[id] = ctx.getEntitySource(id);
-      }
-      return ast;
-    }
-
-    // don't build inline JSON for default language
-    if (ctx.supportedLocales[0] === 'en-US') {
-      return {};
-    }
-    var elements = getTranslatableChildren(fragment);
-
-    for (var i = 0; i < elements.length; i++) {
-      var attrs = getL10nAttributes(elements[i]);
-      var val = ctx.getEntitySource(attrs.id);
-      ast[attrs.id] = val;
-    }
-    return ast;
-  };
-
-  navigator.mozL10n.translate = translateFragment;
-
-  navigator.mozL10n.localize = localizeElement;
-
-  navigator.mozL10n.get = ctx.get.bind(ctx);
-
-  navigator.mozL10n.ready = ctx.ready.bind(ctx);
-
-  navigator.mozL10n.init = function(callback) {
-    ctx = new Context();
-    ctx.isRuntime = false;
-    initDocumentLocalization(callback);
-  };
+    });
+  }
 
   if (window.document) {
     isPretranslated = document.documentElement.lang === navigator.language;
@@ -88,19 +68,6 @@
         navigator.mozL10n.language.code = event.settingValue;
       });
     }
-  }
-
-  function waitFor(state, callback) {
-    if (document.readyState === state) {
-      callback();
-      return;
-    }
-    document.addEventListener('readystatechange', function l10n_onrsc() {
-      if (document.readyState === state) {
-        document.removeEventListener('readystatechange', l10n_onrsc);
-        callback();
-      }
-    });
   }
 
   function pretranslate() {
@@ -178,17 +145,9 @@
         patterns.push(ini.resources[i].replace('en-US', '{{locale}}'));
       }
       var args = [pos, 1].concat(patterns);
-
       ctx.resLinks.splice.apply(ctx.resLinks, args);
-
       cb();
     });
-  }
-
-  function initLocale(forced) {
-    ctx.freeze(onReady.bind(null, forced));
-    document.documentElement.lang = navigator.mozL10n.language.code;
-    document.documentElement.dir = navigator.mozL10n.language.direction;
   }
 
   function relativePath(baseUrl, url) {
@@ -242,6 +201,12 @@
     };
   }
 
+  function initLocale(forced) {
+    ctx.freeze(onReady.bind(null, forced));
+    document.documentElement.lang = navigator.mozL10n.language.code;
+    document.documentElement.dir = navigator.mozL10n.language.direction;
+  }
+
   function onReady(forced) {
     if (forced || !isPretranslated) {
       translateFragment();
@@ -256,6 +221,47 @@
     event.language = ctx.supportedLocales[0];
     window.dispatchEvent(event);
   }
+
+
+  /* API for webapp-optimize */
+
+  navigator.mozL10n.init = function(callback) {
+    ctx = new Context();
+    ctx.isRuntime = false;
+    initDocumentLocalization(callback);
+  };
+
+  navigator.mozL10n.getDictionary = function(fragment) {
+    var ast = {};
+
+    if (!fragment) {
+      var sourceLocale = ctx.getLocale(ctx.supportedLocales.length - 1);
+      if (!sourceLocale.isReady) {
+        sourceLocale.build(null);
+      }
+      // iterate over all strings in en-US
+      for (var id in sourceLocale.ast) {
+        ast[id] = ctx.getEntitySource(id);
+      }
+      return ast;
+    }
+
+    // don't build inline JSON for default language
+    if (ctx.supportedLocales[0] === 'en-US') {
+      return {};
+    }
+    var elements = getTranslatableChildren(fragment);
+
+    for (var i = 0; i < elements.length; i++) {
+      var attrs = getL10nAttributes(elements[i]);
+      var val = ctx.getEntitySource(attrs.id);
+      ast[attrs.id] = val;
+    }
+    return ast;
+  };
+
+
+  /* DOM translation functions */
 
   function translateFragment(element) {
 
