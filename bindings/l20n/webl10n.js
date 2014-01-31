@@ -9,11 +9,11 @@
 
   navigator.mozL10n.language = {
     set code(lang) {
-      ctx.currentLocale = lang;
+      ctx.setLocale(lang);
       initLocale(true);
     },
     get code() {
-      return ctx.currentLocale;
+      return ctx.supportedLocales[0];
     },
     direction: 'ltr',
   };
@@ -34,7 +34,7 @@
     }
 
     // don't build inline JSON for default language
-    if (ctx.currentLocale === 'en-US') {
+    if (ctx.supportedLocales[0] === 'en-US') {
       return {};
     }
     var elements = getTranslatableChildren(fragment);
@@ -63,7 +63,7 @@
   if (window.document) {
     isPretranslated = document.documentElement.lang === navigator.language;
 
-    ctx.currentLocale = navigator.language;
+    ctx.setLocale(navigator.language);
 
     if (isPretranslated) {
       waitFor('complete', function() {
@@ -79,7 +79,7 @@
 
     if ('mozSettings' in navigator && navigator.mozSettings) {
       navigator.mozSettings.addObserver('language.current', function(event) {
-        ctx.currentLocale = event.settingValue;
+        ctx.setLocale(event.settingValue);
         initLocale(true);
       });
     }
@@ -111,7 +111,7 @@
   function inlineLocalization() {
     var body = document.body;
     var script = body.querySelector('script[type="application/l10n"][lang="' +
-                                    ctx.currentLocale + '"]');
+                                    ctx.supportedLocales[0] + '"]');
     if (!script) {
       return false;
     }
@@ -246,7 +246,7 @@
   function fireLocalizedEvent() {
     var event = document.createEvent('Event');
     event.initEvent('localized', false, false);
-    event.language = ctx.currentLocale;
+    event.language = ctx.supportedLocales[0];
     window.dispatchEvent(event);
   }
 
