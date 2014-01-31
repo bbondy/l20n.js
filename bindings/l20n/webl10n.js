@@ -15,7 +15,12 @@
     get code() {
       return ctx.supportedLocales[0];
     },
-    direction: 'ltr',
+    get direction() {
+      // http://www.w3.org/International/questions/qa-scripts
+      // Arabic, Hebrew, Farsi, Pashto, Urdu
+      var rtlList = ['ar', 'he', 'fa', 'ps', 'ur'];
+      return (rtlList.indexOf(ctx.supportedLocales[0]) >= 0) ? 'rtl' : 'ltr';
+    }
   };
 
   navigator.mozL10n.getDictionary = function(fragment) {
@@ -80,8 +85,7 @@
 
     if ('mozSettings' in navigator && navigator.mozSettings) {
       navigator.mozSettings.addObserver('language.current', function(event) {
-        ctx.setLocale(event.settingValue);
-        initLocale(true);
+        navigator.mozL10n.language.code = event.settingValue;
       });
     }
   }
@@ -183,6 +187,8 @@
 
   function initLocale(forced) {
     ctx.freeze(onReady.bind(null, forced));
+    document.documentElement.lang = navigator.mozL10n.language.code;
+    document.documentElement.dir = navigator.mozL10n.language.direction;
   }
 
   function relativePath(baseUrl, url) {
