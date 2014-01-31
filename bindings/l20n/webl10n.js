@@ -4,6 +4,10 @@
   var io = require('./platform/io');
 
   var isPretranslated = false;
+  // http://www.w3.org/International/questions/qa-scripts
+  // Arabic, Hebrew, Farsi, Pashto, Urdu
+  var rtlList = ['ar', 'he', 'fa', 'ps', 'ur'];
+
   var ctx = new Context();
 
 
@@ -23,12 +27,13 @@
       return ctx.supportedLocales[0];
     },
     get direction() {
-      // http://www.w3.org/International/questions/qa-scripts
-      // Arabic, Hebrew, Farsi, Pashto, Urdu
-      var rtlList = ['ar', 'he', 'fa', 'ps', 'ur'];
-      return (rtlList.indexOf(ctx.supportedLocales[0]) >= 0) ? 'rtl' : 'ltr';
+      return getDirection(ctx.supportedLocales[0]);
     }
   };
+
+  function getDirection(lang) {
+    return (rtlList.indexOf(lang) >= 0) ? 'rtl' : 'ltr';
+  }
 
 
   /* Initialization */
@@ -47,9 +52,11 @@
   }
 
   if (window.document) {
-    isPretranslated = document.documentElement.lang === navigator.language;
+    isPretranslated = (document.documentElement.lang === navigator.language);
 
     ctx.setLocale(navigator.language);
+    document.documentElement.lang = ctx.supportedLocales[0];
+    document.documentElement.dir = getDirection(ctx.supportedLocales[0]);
 
     if (isPretranslated) {
       waitFor('complete', function() {
@@ -203,8 +210,8 @@
 
   function initLocale(forced) {
     ctx.freeze(onReady.bind(null, forced));
-    document.documentElement.lang = navigator.mozL10n.language.code;
-    document.documentElement.dir = navigator.mozL10n.language.direction;
+    document.documentElement.lang = ctx.supportedLocales[0];
+    document.documentElement.dir = getDirection(ctx.supportedLocales[0]);
   }
 
   function onReady(forced) {
