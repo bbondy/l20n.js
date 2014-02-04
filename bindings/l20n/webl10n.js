@@ -277,8 +277,7 @@
     var nodes = getTranslatableChildren(element);
 
     for (var i = 0; i < nodes.length; i++) {
-      var l10nId = nodes[i].getAttribute('data-l10n-id');
-      nodes[i].textContent = ctx.get(l10nId);
+      translateElement(nodes[i]);
     }
     return [];
   }
@@ -316,6 +315,7 @@
 
     for (var key in entity.attributes) {
       if (entity.attributes.hasOwnProperty(key)) {
+        var attr = entity.attributes[key];
         var pos = key.indexOf('.');
         if (pos !== -1) {
           element[key.substr(0, pos)][key.substr(pos + 1)] = attr;
