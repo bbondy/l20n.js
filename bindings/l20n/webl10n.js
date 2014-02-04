@@ -23,10 +23,7 @@
         return 'loading';
       }
       if (!ctx.isReady) {
-        // XXX in many places, apps check for complete or interactive, which 
-        // seems to be wrong;  hide interactive for now
-        //return 'interactive';
-        return 'loading';
+        return 'interactive';
       }
       return 'complete';
     },
