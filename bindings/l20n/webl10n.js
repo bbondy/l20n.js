@@ -13,21 +13,34 @@
 
   /* mozL10n public API */
 
-  navigator.mozL10n = {};
-  navigator.mozL10n.translate = translateFragment;
-  navigator.mozL10n.localize = localizeElement;
-  navigator.mozL10n.get = ctx.get.bind(ctx);
-  navigator.mozL10n.ready = ctx.ready.bind(ctx);
-  navigator.mozL10n.language = {
-    set code(lang) {
-      ctx.setLocale(lang);
-      initLocale(true);
+  navigator.mozL10n = {
+    translate: translateFragment,
+    localize: localizeElement,
+    get: ctx.get.bind(ctx),
+    ready: ctx.ready.bind(ctx),
+    get readyState() {
+      if (!ctx.isFrozen) {
+        return 'loading';
+      }
+      if (!ctx.isReady) {
+        // XXX in many places, apps check for complete or interactive, which 
+        // seems to be wrong;  hide interactive for now
+        //return 'interactive';
+        return 'loading';
+      }
+      return 'complete';
     },
-    get code() {
-      return ctx.supportedLocales[0];
-    },
-    get direction() {
-      return getDirection(ctx.supportedLocales[0]);
+    language: {
+      set code(lang) {
+        ctx.setLocale(lang);
+        initLocale(true);
+      },
+      get code() {
+        return ctx.supportedLocales[0];
+      },
+      get direction() {
+        return getDirection(ctx.supportedLocales[0]);
+      }
     }
   };
 
@@ -345,5 +358,7 @@
       element.removeAttribute('data-l10n-args');
     }
 
-    translateElement(element);
+    if (ctx.isReady) {
+      translateElement(element);
+    }
   }
