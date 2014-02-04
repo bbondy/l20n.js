@@ -308,7 +308,22 @@
       return;
     }
 
-    element.textContent = ctx.get(l10n.id);
+    var entity = ctx.getEntity(l10n.id);
+
+    if (entity.value) {
+      element.textContent = entity.value;
+    }
+
+    for (var key in entity.attributes) {
+      if (entity.attributes.hasOwnProperty(key)) {
+        var pos = key.indexOf('.');
+        if (pos !== -1) {
+          element[key.substr(0, pos)][key.substr(pos + 1)] = attr;
+        } else {
+          element[key] = attr;
+        }
+      }
+    }
     return true;
   }
 
