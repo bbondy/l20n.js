@@ -6,17 +6,20 @@ module.exports = {
     banner: '' +
       '/* -*- Mode: js; js-indent-level: 2; indent-tabs-mode: nil -*- */\n' +
       '/* vim: set shiftwidth=2 tabstop=2 autoindent cindent expandtab: */\n' +
-      '(function(window, undefined) {\n \'use strict\';\n\n',
-    footer: '})(this);',
+      '\n' +
+      '(function(window, undefined) {\n' +
+      '  \'use strict\';\n' +
+      '\n',
+    footer: '})(this);\n',
     process: function(src) {
       src = src.replace(
-        /var .* = require.*;/g,
+        /.*var .* = require.*;\n/g,
         '');
       src = src.replace(
-        /exports.*;/g,
+        /.*exports.*;\n/g,
         '');
       src = src.replace(
-        /'use strict';/g,
+        /.*'use strict';\n/g,
         '');
       return src;
     }

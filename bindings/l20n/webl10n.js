@@ -123,7 +123,7 @@
     for (i = 0; i < resLinks.length; i++) {
       var url = resLinks[i].getAttribute('href');
       ctx.resLinks.push(url);
-      var type = url.substr(url.lastIndexOf('.')+1);
+      var type = url.substr(url.lastIndexOf('.') + 1);
       if (type === 'ini') {
         iniLinks.push(url);
       }
