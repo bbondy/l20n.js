@@ -281,14 +281,14 @@
   /* DOM translation functions */
 
   function translateFragment(element) {
-
     element = element || document.documentElement;
 
+    translateElement(element);
     var nodes = getTranslatableChildren(element);
-
     for (var i = 0; i < nodes.length; i++) {
       translateElement(nodes[i]);
     }
+
     return [];
   }
 
