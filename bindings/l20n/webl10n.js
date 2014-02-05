@@ -317,7 +317,7 @@
       return;
     }
 
-    var entity = ctx.getEntity(l10n.id);
+    var entity = ctx.getEntity(l10n.id, l10n.args);
 
     if (entity.value) {
       setTextContent(element, entity.value);
