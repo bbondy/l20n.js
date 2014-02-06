@@ -105,10 +105,21 @@
       return false;
     }
     var locale = ctx.getLocale();
+    // the inline localization is happenning very early, when the ctx is not
+    // yet ready and when the resources haven't been downloaded yet;  add the
+    // inlined JSON directly to the current locale
     locale.addAST(JSON.parse(script.innerHTML));
+    // avoid errors in ctx.get*
+    ctx.isReady = true;
+    // make sure the locale is not actually built in ctx.get*
     locale.isReady = true;
+    // localize the visible DOM
     translateFragment();
+    // restore readiness of locale and ctx thanks to which proper localization
+    // resources can be added later on (in ctx.freeze)
     locale.isReady = false;
+    ctx.isReady = false;
+    // the visible DOM is now pretranslated
     isPretranslated = true;
     return true;
   }
