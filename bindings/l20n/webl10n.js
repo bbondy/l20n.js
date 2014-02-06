@@ -19,13 +19,10 @@
     get: ctx.get.bind(ctx),
     ready: ctx.ready.bind(ctx),
     get readyState() {
-      if (!ctx.isFrozen) {
-        return 'loading';
+      if (ctx.isReady) {
+        return 'complete';
       }
-      if (!ctx.isReady) {
-        return 'interactive';
-      }
-      return 'complete';
+      return 'loading';
     },
     language: {
       set code(lang) {
