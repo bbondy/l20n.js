@@ -28,6 +28,7 @@ module.exports = {
     src: [
       'lib/client/l20n/platform/io.js',
       'lib/l20n/events.js',
+      'lib/l20n/plurals.js',
       'lib/l20n/parser.js',
       'lib/l20n/compiler.js',
       'lib/l20n/locale.js',
