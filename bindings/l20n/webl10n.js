@@ -252,7 +252,7 @@
 
   navigator.mozL10n.init = function(callback) {
     ctx = new Context();
-    ctx.isRuntime = false;
+    ctx.isBuildtime = true;
     initDocumentLocalization(callback);
   };
 
