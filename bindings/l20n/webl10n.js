@@ -2,7 +2,7 @@
 
   var Context = require('./context').Context;
   var io = require('./platform/io');
-  var rePlaceable = require('./compiler').rePlaceable;
+  var rePlaceables = require('./compiler').rePlaceables;
 
   var isPretranslated = false;
   // http://www.w3.org/International/questions/qa-scripts
@@ -261,7 +261,7 @@
   function getPlaceableNames(str) {
     var placeables = [];
     var match;
-    while (match = rePlaceable.exec(str)) {
+    while (match = rePlaceables.exec(str)) {
       placeables.push(match[1]);
     }
     return placeables;
