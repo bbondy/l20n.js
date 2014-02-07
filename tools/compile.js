@@ -1,11 +1,14 @@
 #!/usr/bin/env node
 
+'use strict';
+
 var fs = require('fs');
 var program = require('commander');
 var colors = require('colors');
 
-var Parser = require('../lib/l20n/parser').Parser;
-var Compiler = require('../lib/l20n/compiler').Compiler;
+var parse = require('../lib/l20n/parser').parseProperties;
+var compile = require('../lib/l20n/compiler').compile;
+var getPluralRule = require('../lib/l20n/plurals').getPluralRule;
 
 program
   .version('0.0.1')
@@ -28,16 +31,16 @@ var ERROR = 'red';
 var FALLBACK = 'yellow';
 
 function color(str, col) {
-  if (program.color && col) {
+  if (program.color && col && str) {
     return str[col];
   }
   return str;
 }
 
 function singleline(str) {
-  return str.replace(/\n/g, ' ')
-            .replace(/\s{3,}/g, ' ')
-            .trim();
+  return str ? str.replace(/\n/g, ' ')
+                  .replace(/\s{3,}/g, ' ')
+                  .trim() : str;
 }
 
 function getString(entity) {
@@ -67,12 +70,13 @@ function compileAndPrint(err, code) {
   if (program.ast) {
     ast = code.toString();
   } else {
-    ast = Parser.parse(code.toString());
+    ast = parse(code.toString());
   }
 
-  var env = Compiler.compile(ast);
+  var env = compile(ast);
+  env.__plural = getPluralRule('en-US');
   for (var id in env) {
-    if (env[id].expression) {
+    if (id.indexOf('__') === 0) {
       continue;
     }
     print(env[id]);

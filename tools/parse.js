@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 
+'use strict';
+
 var fs = require('fs');
 var program = require('commander');
 var prettyjson = require('prettyjson');
 var colors = require('colors');
 
-var Parser = require('../lib/l20n/parser').Parser;
+var parse = require('../lib/l20n/parser').parseProperties;
 
 program
   .version('0.0.1')
@@ -22,7 +24,6 @@ function color(str, col) {
 }
 
 function logError(err) {
-  var error = {};
   var message  = ': ' + err.message.replace('\n', '');
   var name = err.name + (err.entry ? ' in ' + err.entry : '');
   console.warn(color(name, 'red') + message);
@@ -32,7 +33,7 @@ function print(err, data) {
   if (err) {
     return console.error('File not found: ' + err.path);
   }
-  var ast = Parser.parse(data.toString()); 
+  var ast = parse(data.toString());
   if (program.raw) {
     console.log(JSON.stringify(ast, null, 2));
   } else {
