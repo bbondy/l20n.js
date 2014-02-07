@@ -2,6 +2,7 @@
 
   var Context = require('./context').Context;
   var io = require('./platform/io');
+  var rePlaceable = require('./compiler').rePlaceable;
 
   var isPretranslated = false;
   // http://www.w3.org/International/questions/qa-scripts
@@ -256,6 +257,35 @@
     initDocumentLocalization(callback);
   };
 
+  // return an array of all {{placeables}} found in a string
+  function getPlaceableNames(str) {
+    var placeables = [];
+    var match;
+    while (match = rePlaceable.exec(str)) {
+      placeables.push(match[1]);
+    }
+    return placeables;
+  }
+
+  // recursively walk an entity and put all dependencies required for string
+  // interpolation in the AST
+  function getPlaceables(ast, val) {
+    if (typeof val === 'string') {
+      var placeables = getPlaceableNames(val);
+      for (var i = 0; i < placeables.length; i++) {
+        var id = placeables[i];
+        ast[id] = ctx.getEntitySource(id);
+      }
+    } else {
+      for (var prop in val) {
+        if (!val.hasOwnProperty(prop) || val === '_index') {
+          continue;
+        }
+        getPlaceables(ast, val[prop]);
+      }
+    }
+  }
+
   navigator.mozL10n.getDictionary = function(fragment) {
     var ast = {};
 
@@ -281,6 +311,7 @@
       var attrs = getL10nAttributes(elements[i]);
       var val = ctx.getEntitySource(attrs.id);
       ast[attrs.id] = val;
+      getPlaceables(ast, val);
     }
     return ast;
   };
