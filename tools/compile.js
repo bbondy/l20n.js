@@ -44,16 +44,17 @@ function singleline(str) {
 }
 
 function getString(entity) {
-  return color(singleline(entity.getString(data)), VALUE);
+  if (typeof entity !== 'string') {
+    entity = entity.getString(data);
+  }
+  return color(singleline(entity), VALUE);
 }
 
-function print(entity) {
-  if (entity.local && !program.withLocal) {
+function print(id, entity) {
+  console.log(color(id, ID), getString(entity));
+  if (!entity.attributes) {
     return;
   }
-  // print the string value of the entity
-  console.log(color(entity.id, ID), getString(entity));
-  // print the string values of the attributes
   for (var attr in entity.attributes) {
     if (entity.attributes[attr].local && !program.withLocal) {
       continue;
@@ -79,7 +80,7 @@ function compileAndPrint(err, code) {
     if (id.indexOf('__') === 0) {
       continue;
     }
-    print(env[id]);
+    print(id, env[id]);
   }
 }
 
