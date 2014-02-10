@@ -368,8 +368,8 @@
         var pos = key.indexOf('.');
         if (pos !== -1) {
           element[key.substr(0, pos)][key.substr(pos + 1)] = attr;
-        } else if (key === 'aria-label') {
-          element.setAttribute(key, attr);
+        } else if (key === 'ariaLabel') {
+          element.setAttribute('aria-label', attr);
         } else {
           element[key] = attr;
         }
