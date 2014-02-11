@@ -120,6 +120,8 @@
     locale.isReady = true;
     // localize the visible DOM
     translateFragment();
+    // record the fact that the locale already has the inlined strings
+    locale.isPartial = true;
     // restore readiness of locale and ctx thanks to which proper localization
     // resources can be added later on (in ctx.freeze)
     locale.isReady = false;
@@ -235,6 +237,15 @@
   }
 
   function initLocale(forced) {
+    var body = document.body;
+    var script = body.querySelector('script[type="application/l10n"][lang="' +
+                                    ctx.supportedLocales[0] + '"]');
+    if (script) {
+      var locale = ctx.getLocale();
+      if (!locale.isPartial) {
+        locale.addAST(JSON.parse(script.innerHTML));
+      }
+    }
     ctx.freeze(onReady.bind(null, forced));
     document.documentElement.lang = ctx.supportedLocales[0];
     document.documentElement.dir = getDirection(ctx.supportedLocales[0]);
@@ -308,10 +319,6 @@
       return ast;
     }
 
-    // don't build inline JSON for default language
-    if (ctx.supportedLocales[0] === 'en-US') {
-      return {};
-    }
     var elements = getTranslatableChildren(fragment);
 
     for (var i = 0; i < elements.length; i++) {
