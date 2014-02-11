@@ -46,13 +46,20 @@
 
   /* Initialization */
 
+  var readyStates = {
+    'loading': 0,
+    'interactive': 1,
+    'complete': 2
+  };
+
   function waitFor(state, callback) {
-    if (document.readyState === state) {
+    state = readyStates[state];
+    if (readyStates[document.readyState] >= state) {
       callback();
       return;
     }
     document.addEventListener('readystatechange', function l10n_onrsc() {
-      if (document.readyState === state) {
+      if (readyStates[document.readyState] >= state) {
         document.removeEventListener('readystatechange', l10n_onrsc);
         callback();
       }
@@ -67,7 +74,7 @@
     document.documentElement.dir = getDirection(ctx.supportedLocales[0]);
 
     if (isPretranslated) {
-      waitFor('complete', function() {
+      waitFor('interactive', function() {
         window.setTimeout(initDocumentLocalization.bind(null, initLocale));
       });
     } else {
@@ -87,7 +94,7 @@
 
   function pretranslate() {
     if (inlineLocalization()) {
-      waitFor('complete', function() {
+      waitFor('interactive', function() {
         window.setTimeout(initDocumentLocalization.bind(null, initLocale));
       });
     } else {
