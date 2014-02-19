@@ -31,8 +31,10 @@ module.exports = function (grunt) {
     concat: require('./grunt/config/concat'),
     clean: require('./grunt/config/clean'),
     jshint: require('./grunt/config/lint/jshint'),
+    jscoverage: require('./grunt/config/jscoverage'),
     jsonlint: require('./grunt/config/lint/jsonlint'),
     'merge-conflict': require('./grunt/config/lint/merge-conflict'),
+    mochaTest: require('./grunt/config/mocha-test'),
     shell: require('./grunt/config/shell'),
     uglify: require('./grunt/config/uglify'),
     watch: require('./grunt/config/watch'),
@@ -63,6 +65,19 @@ module.exports = function (grunt) {
     'jshint:bindings',
     'jsonlint:all',
   ]);
+
+
+  grunt.registerTask('test', ['mochaTest:dot']);
+
+  // TODO first make sure `dist/docs` exists.
+  grunt.registerTask('coverage', function () {
+    process.env.L20N_COV = 1;
+    grunt.file.mkdir('dist/docs');
+    grunt.task.run([
+      'jscoverage',
+      'mochaTest:coverage',
+    ]);
+  });
 
   grunt.registerTask('build', [
     'clean',
