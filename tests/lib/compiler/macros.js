@@ -1,26 +1,19 @@
-var Parser = require('../../../lib/l20n/parser').Parser;
-var Compiler = process.env.L20N_COV
-  ? require('../../../build/cov/lib/l20n/compiler').Compiler
-  : require('../../../lib/l20n/compiler').Compiler;
+'use strict';
 
-var parser = new Parser();
-var compiler = new Compiler();
+var should = require('should');
+
+var parse = require('../../../lib/l20n/parser').parseProperties;
+var compile = process.env.L20N_COV
+  ? require('../../../build/cov/lib/l20n/compiler').compile
+  : require('../../../lib/l20n/compiler').compile;
+var getPluralRule = require('../../../lib/l20n/plurals').getPluralRule;
+
 
 describe('Macros', function(){
-  var source, ctxdata, ast, env;
+  var source, ctxdata, env;
   beforeEach(function() {
-    ast = parser.parse(source);
-    ast.body['plural'] = {
-      type: 'Macro',
-      args: [{
-        type: 'Identifier',
-        name: 'n'
-      }],
-      expression: function(n) {
-        return (n == 1) ? 'one' : 'other';
-      }
-    };
-    env = compiler.compile(ast);
+    env = compile(parse(source));
+    env.__plural = getPluralRule('en-US');
   });
 
   describe('referencing macros', function(){
@@ -29,13 +22,13 @@ describe('Macros', function(){
         n: 1
       };
       source = [
-        'placeMacro={{ plural }}'
+        'placeMacro={{ plural }}',
+        'placeRealMacro={{ __plural }}'
       ].join('\n');
     });
     it('throws when resolving (not calling) a macro in a complex string', function() {
-      (function() {
-        env.placeMacro.getString(ctxdata);
-      }).should.throw(/uncalled/i);
+      env.placeMacro.getString(ctxdata).should.equal('{{ plural }}');
+      env.placeRealMacro.getString(ctxdata).should.equal('{{ __plural }}');
     });
   });
 
@@ -71,56 +64,42 @@ describe('Macros', function(){
       ].join('\n');
     });
     it('throws if an entity is passed', function() {
-      (function() {
-        env.passFoo.getString(ctxdata);
-      }).should.throw(/must be numbers/);
+      var value = env.passFoo.getString(ctxdata);
+      should.equal(value, undefined);
     });
     it('throws if a complex entity is passed', function() {
-      (function() {
-        env.passUseFoo.getString(ctxdata);
-      }).should.throw(/must be numbers/);
+      var value = env.passUseFoo.getString(ctxdata);
+      should.equal(value, undefined);
     });
     it('throws if a hash entity is passed', function() {
-      (function() {
-        env.passBar.getString(ctxdata);
-      }).should.throw(/must be numbers/);
+      var value = env.passBar.getString(ctxdata);
+      should.equal(value, undefined);
     });
     it('throws if a macro is passed', function() {
-      (function() {
-        env.passPlural.getString(ctxdata);
-      }).should.throw(/must be numbers/);
+      var value = env.passPlural.getString(ctxdata);
+      should.equal(value, undefined);
     });
     it('throws if a missing entry is passed', function() {
-      (function() {
-        env.passMissing.getString(ctxdata);
-      }).should.throw(/unknown entry/);
+      var value = env.passMissing.getString(ctxdata);
+      should.equal(value, undefined);
     });
     it('throws if a native function is passed', function() {
-      (function() {
-        env.passWatch.getString(ctxdata);
-      }).should.throw(/unknown entry/);
+      var value = env.passWatch.getString(ctxdata);
+      should.equal(value, undefined);
     });
   });
 });
 
 describe('A simple plural macro', function(){
-  var source, ctxdata, ast, env;
+  var source, env;
   beforeEach(function() {
-    ast = parser.parse(source);
-    ast.body['plural'] = {
-      type: 'Macro',
-      args: [{
-        type: 'Identifier',
-        name: 'n'
-      }],
-      expression: function(n) {
-        // a made-up plural rule:
-        // [0, 1) -> other
-        // [1, Inf) -> many
-        return (n >= 0 && n < 1) ? 'other' : 'many';
-      }
+    env = compile(parse(source));
+    env.__plural = function(n) {
+      // a made-up plural rule:
+      // [0, 1) -> other
+      // [1, Inf) -> many
+      return (n >= 0 && n < 1) ? 'other' : 'many';
     };
-    env = compiler.compile(ast);
   });
 
   describe('an entity with all plural forms defined', function(){
@@ -236,33 +215,28 @@ describe('A simple plural macro', function(){
       ].join('\n');
     });
     it('returns other for 0', function() {
-      (function() {
-        env.foo.getString({n: 0});
-      }).should.throw(/tried "other"/);
+      var value = env.foo.getString({n: 0});
+      should.equal(value, undefined);
     });
     it('returns one for 1', function() {
       var value = env.foo.getString({n: 1});
       value.should.equal('One');
     });
     it('returns other for 2', function() {
-      (function() {
-        env.foo.getString({n: 2});
-      }).should.throw(/tried "many"/);
+      var value = env.foo.getString({n: 2});
+      should.equal(value, undefined);
     });
     it('returns other for 3', function() {
-      (function() {
-        env.foo.getString({n: 3});
-      }).should.throw(/tried "many"/);
+      var value = env.foo.getString({n: 3});
+      should.equal(value, undefined);
     });
     it('returns other for 5', function() {
-      (function() {
-        env.foo.getString({n: 5});
-      }).should.throw(/tried "many"/);
+      var value = env.foo.getString({n: 5});
+      should.equal(value, undefined);
     });
     it('returns other for 0.5', function() {
-      (function() {
-        env.foo.getString({n: .5});
-      }).should.throw(/tried "other"/);
+      var value = env.foo.getString({n: .5});
+      should.equal(value, undefined);
     });
   });
 

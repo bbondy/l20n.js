@@ -6,6 +6,7 @@ var src = [
   //'tests/lib/parser/*.js',
   //'tests/lib/context/*.js',
   'tests/lib/compiler/env.js',
+  'tests/lib/compiler/macros.js',
   'tests/lib/compiler/primitives.js',
   'tests/integration/*.js',
 ].concat(insecure ? ['tests/lib/*/insecure/*.js'] : []);
