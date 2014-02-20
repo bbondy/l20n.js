@@ -1,43 +1,35 @@
-var Parser = require('../../../lib/l20n/parser').Parser;
-var Compiler = process.env.L20N_COV
-  ? require('../../../build/cov/lib/l20n/compiler').Compiler
-  : require('../../../lib/l20n/compiler').Compiler;
+'use strict';
 
-var parser = new Parser();
-var compiler = new Compiler();
+var parse = require('../../../lib/l20n/parser').parseProperties;
+var compile = process.env.L20N_COV
+  ? require('../../../build/cov/lib/l20n/compiler').compile
+  : require('../../../lib/l20n/compiler').compile;
 
 describe('Env object', function(){
-  var source, ctxdata, ast, env;
+  var source, env;
   beforeEach(function() {
     source = [
       'foo=Foo',
       'getFoo={{ foo }}',
       'getBar={{ bar }}'
     ].join('\n');
-    ast = parser.parse(source);
-    env = compiler.compile(ast);
+    env = compile(parse(source));
   });
 
   it('works', function() {
-    env.foo.getString().should.equal('Foo');
+    env.foo.should.equal('Foo');
     env.getFoo.getString().should.equal('Foo');
-    (function() {
-      env.getBar.getString();
-    }).should.throw(/unknown entry: bar/);
+    env.getBar.getString().should.equal('{{ bar }}');
   });
   it('cannot be modified by another compilation', function() {
-    source2 = [
+    var source2 = [
       'foo=Foo',
       'bar=Bar'
     ].join('\n');
-    ast2 = parser.parse(source2);
-    env2 = compiler.compile(ast2);
+    var env2 = compile(parse(source2));
 
-    env.foo.getString().should.equal('Foo');
+    env.foo.should.equal('Foo');
     env.getFoo.getString().should.equal('Foo');
-    (function() {
-      env.getBar.getString();
-    }).should.throw(/unknown entry: bar/);
+    env.getBar.getString().should.equal('{{ bar }}');
   });
-
 });
