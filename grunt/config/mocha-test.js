@@ -5,7 +5,7 @@ var insecure = require('../var/insecure');
 var src = [
   //'tests/lib/parser/*.js',
   //'tests/lib/context/*.js',
-  //'tests/lib/compiler/*.js',
+  'tests/lib/compiler/primitives.js',
   'tests/integration/*.js',
 ].concat(insecure ? ['tests/lib/*/insecure/*.js'] : []);
 

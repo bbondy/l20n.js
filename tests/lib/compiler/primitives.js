@@ -1,26 +1,16 @@
-var Parser = require('../../../lib/l20n/parser').Parser;
-var Compiler = process.env.L20N_COV
-  ? require('../../../build/cov/lib/l20n/compiler').Compiler
-  : require('../../../lib/l20n/compiler').Compiler;
+'use strict';
 
-var parser = new Parser(true);
-var compiler = new Compiler();
+var parse = require('../../../lib/l20n/parser').parseProperties;
+var compile = process.env.L20N_COV
+  ? require('../../../build/cov/lib/l20n/compiler').compile
+  : require('../../../lib/l20n/compiler').compile;
+var getPluralRule = require('../../../lib/l20n/plurals').getPluralRule;
 
 describe('Primitives:', function(){
-  var source, ast, env;
+  var source, env;
   beforeEach(function() {
-    ast = parser.parse(source);
-    ast.body['plural'] = {
-      type: 'Macro',
-      args: [{
-        type: 'Identifier',
-        name: 'n'
-      }],
-      expression: function(n) {
-        return (n == 1) ? 'one' : 'other';
-      }
-    };
-    env = compiler.compile(ast);
+    env = compile(parse(source));
+    env.__plural = getPluralRule('en-US');
   });
 
   describe('Simple string value', function(){
@@ -30,12 +20,7 @@ describe('Primitives:', function(){
       ].join('\n');
     });
     it('returns the value', function(){
-      var value = env.foo.getString();
-      value.should.equal("Foo");
-    });
-    // Bug 817610 - Optimize a fast path for String entities in the Compiler
-    it('is detected to be non-complex (simple)', function(){
-      env.foo.value.should.be.a('string');
+      env.foo.should.equal('Foo');
     });
   });
 
@@ -50,16 +35,11 @@ describe('Primitives:', function(){
     });
     it('returns the value', function(){
       var value = env.bar.getString();
-      value.should.equal("Foo Bar");
+      value.should.equal('Foo Bar');
     });
-    // Bug 817610 - Optimize a fast path for String entities in the Compiler
-    it('is detected to be maybe-complex', function(){
-      env.bar.value.should.be.a('function');
-    });
-    it('throws when the referenced entity cannot be found', function(){
-      (function() {
-        env.baz.getString();
-      }).should.throw(/unknown entry/);
+    it('returns the raw string if the referenced entity is not found', function(){
+      var value = env.baz.getString();
+      value.should.equal('{{ missing }}');
     });
   });
   
@@ -78,10 +58,9 @@ describe('Primitives:', function(){
       var entity = env.foo.get();
       entity.attributes['attr'].should.equal('Foo');
     });
-    it('throws when the referenced entity has null value', function(){
-      (function() {
-        env.bar.getString();
-      }).should.throw(/Placeables must be strings or numbers/);
+    it('returns the raw string when the referenced entity has null value', function(){
+      var value = env.bar.getString();
+      value.should.equal('{{ foo }} Bar');
     });
   });
 
@@ -92,10 +71,9 @@ describe('Primitives:', function(){
         'bar={{ foo }}'
       ].join('\n');
     });
-    it('throws', function(){
-      (function() {
-        env.foo.getString();
-      }).should.throw(/Cyclic reference detected/);
+    it('returns the raw string', function(){
+      var value = env.foo.getString();
+      value.should.equal('{{ foo }}');
     });
   });
 
@@ -105,10 +83,9 @@ describe('Primitives:', function(){
         'foo={{ foo }}'
       ].join('\n');
     });
-    it('throws', function(){
-      (function() {
-        env.foo.getString();
-      }).should.throw(/Cyclic reference detected/);
+    it('returns the raw string', function(){
+      var value = env.foo.getString();
+      value.should.equal('{{ foo }}');
     });
   });
 
@@ -121,10 +98,9 @@ describe('Primitives:', function(){
         'bar={{ foo }}'
       ].join('\n');
     });
-    it('throws', function(){
-      (function() {
-        env.foo.getString({n: 1});
-      }).should.throw(/Cyclic reference detected/);
+    it('returns the raw string', function(){
+      var value = env.foo.getString({n: 1});
+      value.should.equal('{{ foo }}');
     });
     it('returns the valid value if requested directly', function(){
       var value = env.bar.getString({n: 2});
