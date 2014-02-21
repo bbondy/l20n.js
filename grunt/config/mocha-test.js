@@ -7,6 +7,7 @@ var src = [
   //'tests/lib/context/*.js',
   'tests/lib/compiler/ctxdata.js',
   'tests/lib/compiler/env.js',
+  'tests/lib/compiler/indexes.js',
   'tests/lib/compiler/macros.js',
   'tests/lib/compiler/primitives.js',
   'tests/integration/*.js',

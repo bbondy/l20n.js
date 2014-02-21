@@ -1,26 +1,18 @@
-var Parser = require('../../../lib/l20n/parser').Parser;
-var Compiler = process.env.L20N_COV
-  ? require('../../../build/cov/lib/l20n/compiler').Compiler
-  : require('../../../lib/l20n/compiler').Compiler;
+'use strict';
 
-var parser = new Parser();
-var compiler = new Compiler();
+var should = require('should');
+
+var parse = require('../../../lib/l20n/parser').parseProperties;
+var compile = process.env.L20N_COV
+  ? require('../../../build/cov/lib/l20n/compiler').compile
+  : require('../../../lib/l20n/compiler').compile;
+var getPluralRule = require('../../../lib/l20n/plurals').getPluralRule;
 
 describe('Index', function(){
-  var source, ctxdata, ast, env;
+  var source, env;
   beforeEach(function() {
-    ast = parser.parse(source);
-    ast.body['plural'] = {
-      type: 'Macro',
-      args: [{
-        type: 'Identifier',
-        name: 'n'
-      }],
-      expression: function(n) {
-        return (n == 1) ? 'one' : 'other';
-      }
-    };
-    env = compiler.compile(ast);
+    env = compile(parse(source));
+    env.__plural = getPluralRule('en-US');
   });
 
   describe('Cyclic reference to the same entity', function(){
@@ -30,14 +22,13 @@ describe('Index', function(){
         'foo[one]=One'
       ].join('\n');
     });
-    it('throws', function() {
-      (function() {
-        env.foo.getString();
-      }).should.throw(/must be numbers/);
+    it('is undefined', function() {
+      var value = env.foo.getString();
+      should.equal(value, undefined);
     });
   });
 
-  describe('Reference from an attribute to the value of the same entity', function(){
+  describe.skip('Reference from an attribute to the value of the same entity', function(){
     before(function() {
       source = [
         'foo=Foo',
@@ -45,10 +36,10 @@ describe('Index', function(){
         'foo.attr[one]=One'
       ].join('\n');
     });
-    it('throws', function() {
-      (function() {
-        env.foo.get();
-      }).should.throw(/must be numbers/);
+    it('value of the attribute is undefined', function() {
+      var entity = env.foo.get();
+      should.equal(entity.value, 'Foo');
+      should.equal(entity.attr, undefined);
     });
   });
 
