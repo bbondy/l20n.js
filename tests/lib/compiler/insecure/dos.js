@@ -1,5 +1,7 @@
 'use strict';
 
+var should = require('should');
+
 var parse = require('../../../../lib/l20n/parser').parseProperties;
 var compile = process.env.L20N_COV
   ? require('../../../../build/cov/lib/l20n/compiler').compile
@@ -29,13 +31,12 @@ describe('Reference bombs', function(){
       ].join('\n');
     });
     it('throws', function() {
-      (function() {
-        env.lolz.getString();
-      }).should.throw(/too many characters/);
+      var value = env.lolz.getString();
+      should.equal(value, undefined);
     });
   });
 
-  describe.skip('Quadratic Blowup', function(){
+  describe('Quadratic Blowup', function(){
     before(function() {
       source = [
       '# Project Gutenberg\'s Alice\'s Adventures in Wonderland,',
@@ -104,9 +105,8 @@ describe('Reference bombs', function(){
       ].join('\n');
     });
     it('throws', function() {
-      (function() {
-        env.malice.getString();
-      }).should.throw(/too many placeables/i);
+      var value = env.malice.getString();
+      should.equal(value, undefined);
     });
   });
 
