@@ -1,33 +1,25 @@
-var Parser = require('../../../lib/l20n/parser').Parser;
-var Compiler = process.env.L20N_COV
-  ? require('../../../build/cov/lib/l20n/compiler').Compiler
-  : require('../../../lib/l20n/compiler').Compiler;
+'use strict';
 
-var parser = new Parser();
-var compiler = new Compiler();
+var should = require('should');
+
+var parse = require('../../../lib/l20n/parser').parseProperties;
+var compile = process.env.L20N_COV
+  ? require('../../../build/cov/lib/l20n/compiler').compile
+  : require('../../../lib/l20n/compiler').compile;
+var getPluralRule = require('../../../lib/l20n/plurals').getPluralRule;
 
 describe('Context data', function(){
-  var source, ctxdata, ast, env;
+  var source, ctxdata, env;
   beforeEach(function() {
-    ast = parser.parse(source);
-    ast.body['plural'] = {
-      type: 'Macro',
-      args: [{
-        type: 'Identifier',
-        name: 'n'
-      }],
-      expression: function(n) {
-        return (n == 1) ? 'one' : 'other';
-      }
-    };
-    env = compiler.compile(ast);
+    env = compile(parse(source));
+    env.__plural = getPluralRule('en-US');
   });
 
   describe('in entities', function(){
     before(function() {
       ctxdata = {
         unreadNotifications: 3,
-        foo: "Foo" 
+        foo: "Foo"
       };
       source = [
         'unread=Unread notifications: {{ unreadNotifications }}',
@@ -68,40 +60,33 @@ describe('Context data', function(){
         'protoReference={{ __proto__ }}',
       ].join('\n');
     });
-    it('throws when a missing property of ctxdata is referenced', function(){
-      (function() {
-        var value = env.missingReference.getString(ctxdata);
-      }).should.throw(/unknown entry/);
+    it('returns the raw string when a missing property of ctxdata is referenced', function(){
+      var value = env.missingReference.getString(ctxdata);
+      value.should.equal('{{ missing }}');
     });
-    it('throws when an object is referenced', function(){
-      (function() {
-        var value = env.nestedReference.getString(ctxdata);
-      }).should.throw('Cannot resolve ctxdata of type object');
+    it('returns the raw string when an object is referenced', function(){
+      var value = env.nestedReference.getString(ctxdata);
+      value.should.equal('{{ nested }}');
     });
-    it('throws when watch is referenced', function(){
-      (function() {
-        var value = env.watchReference.getString(ctxdata);
-      }).should.throw(/unknown entry/);
+    it('returns the raw string when watch is referenced', function(){
+      var value = env.watchReference.getString(ctxdata);
+      value.should.equal('{{ watch }}');
     });
-    it('throws when hasOwnProperty is referenced', function(){
-      (function() {
-        var value = env.hasOwnPropertyReference.getString(ctxdata);
-      }).should.throw(/unknown entry/);
+    it('returns the raw string when hasOwnProperty is referenced', function(){
+      var value = env.hasOwnPropertyReference.getString(ctxdata);
+      value.should.equal('{{ hasOwnProperty }}');
     });
-    it('throws when isPrototypeOf is referenced', function(){
-      (function() {
-        var value = env.isPrototypeOfReference.getString(ctxdata);
-      }).should.throw(/unknown entry/);
+    it('returns the raw string when isPrototypeOf is referenced', function(){
+      var value = env.isPrototypeOfReference.getString(ctxdata);
+      value.should.equal('{{ isPrototypeOf }}');
     });
-    it('throws when toString is referenced', function(){
-      (function() {
-        var value = env.toStringReference.getString(ctxdata);
-      }).should.throw(/unknown entry/);
+    it('returns the raw string when toString is referenced', function(){
+      var value = env.toStringReference.getString(ctxdata);
+      value.should.equal('{{ toString }}');
     });
-    it('throws when __proto__ is referenced', function(){
-      (function() {
-        var value = env.protoReference.getString(ctxdata);
-      }).should.throw(/unknown entry/);
+    it('returns the raw string when __proto__ is referenced', function(){
+      var value = env.protoReference.getString(ctxdata);
+      value.should.equal('{{ __proto__ }}');
     });
   });
 
@@ -123,29 +108,32 @@ describe('Context data', function(){
     it('returns a string value', function(){
       env.stringProp.getString(ctxdata).should.equal('string');
     });
-    it('throws when used in a macro', function(){
-      (function() {
-        var value = env.stringIndex.getString(ctxdata);
-      }).should.throw(/must be numbers/);
+    it('is undefined when used in a macro', function(){
+      var value = env.stringIndex.getString(ctxdata);
+      should.equal(value, undefined);
     });
     it('digit returns a string value', function(){
       env.stringNumProp.getString(ctxdata).should.equal('1');
     });
-    it('digit works used in a macro', function(){
+    it('digit returns undefined when used in a macro', function(){
       var value = env.stringNumIndex.getString(ctxdata);
-      value.should.equal('One');
+      should.equal(value, undefined);
     });
   });
 
   describe('and numbers', function(){
     before(function() {
       ctxdata = {
-        num: 1
+        num: 1,
+        nan: NaN
       };
       source = [
         'numProp={{ num }}',
         'numIndex={[ plural(num) ]}',
-        'numIndex[one]=One'
+        'numIndex[one]=One',
+        'nanProp={{ nan }}',
+        'nanIndex={[ plural(nan) ]}',
+        'nanIndex[one]=One'
       ].join('\n');
     });
     it('returns a number value', function(){
@@ -153,6 +141,14 @@ describe('Context data', function(){
     });
     it('returns a value when used in macro', function(){
       env.numIndex.getString(ctxdata).should.equal('One');
+    });
+    it('returns the raw string when NaN is referenced', function(){
+      var value = env.nanProp.getString(ctxdata);
+      value.should.equal('{{ nan }}');
+    });
+    it('is undefined when NaN is used in macro', function(){
+      var value = env.nanIndex.getString(ctxdata);
+      should.equal(value, undefined);
     });
   });
 
@@ -167,15 +163,13 @@ describe('Context data', function(){
         'boolIndex[one]=One'
       ].join('\n');
     });
-    it('throws when referenced', function(){
-      (function() {
-        env.boolProp.getString(ctxdata);
-      }).should.throw(/must be strings or numbers/);
+    it('returns the raw string when referenced', function(){
+      var value = env.boolProp.getString(ctxdata);
+      value.should.equal('{{ bool }}');
     });
-    it('throws when used in a macro', function(){
-      (function() {
-        env.boolIndex.getString(ctxdata);
-      }).should.throw(/must be numbers/);
+    it('is undefined when used in a macro', function(){
+      var value = env.boolIndex.getString(ctxdata);
+      should.equal(value, undefined);
     });
   });
 
@@ -190,15 +184,13 @@ describe('Context data', function(){
         'undefIndex[one]=One'
       ].join('\n');
     });
-    it('throws when referenced', function(){
-      (function() {
-        env.undefProp.getString(ctxdata);
-      }).should.throw(/must be strings or numbers/);
+    it('returns the raw string when referenced', function(){
+      var value = env.undefProp.getString(ctxdata);
+      value.should.equal('{{ undef }}');
     });
-    it('throws when used in a macro', function(){
-      (function() {
-        env.undefIndex.getString(ctxdata);
-      }).should.throw(/must be numbers/);
+    it('is undefined when used in a macro', function(){
+      var value = env.undefIndex.getString(ctxdata);
+      should.equal(value, undefined);
     });
   });
 
@@ -213,15 +205,13 @@ describe('Context data', function(){
         'nullIndex[one]=One'
       ].join('\n');
     });
-    it('throws', function(){
-      (function() {
-        env.nullProp.getString(ctxdata);
-      }).should.throw(/must be strings or numbers/);
+    it('returns the raw string', function(){
+      var value = env.nullProp.getString(ctxdata);
+      value.should.equal('{{ nullable }}');
     });
-    it('throws when used in a macro', function(){
-      (function() {
-        env.nullIndex.getString(ctxdata);
-      }).should.throw(/must be numbers/);
+    it('is undefined when used in a macro', function(){
+      var value = env.nullIndex.getString(ctxdata);
+      should.equal(value, undefined);
     });
   });
 
@@ -236,14 +226,13 @@ describe('Context data', function(){
         'arrIndex[one]=One'
       ].join('\n');
     });
-    it('throws', function(){
-      (function() {
-        env.arrProp.getString(ctxdata);
-      }).should.throw('Cannot resolve ctxdata of type object');
+    it('returns the raw string', function(){
+      var value = env.arrProp.getString(ctxdata);
+      value.should.equal('{{ arr }}');
     });
-    it('throws when used in a macro', function(){
+    it('is undefined when used in a macro', function(){
       var value = env.arrIndex.getString(ctxdata);
-      value.should.equal('One');
+      should.equal(value, undefined);
     });
   });
 
@@ -258,15 +247,13 @@ describe('Context data', function(){
         'arrIndex[one]=One'
       ].join('\n');
     });
-    it('throws', function(){
-      (function() {
-        env.arrProp.getString(ctxdata);
-      }).should.throw('Cannot resolve ctxdata of type object');
+    it('returns the raw string', function(){
+      var value = env.arrProp.getString(ctxdata);
+      value.should.equal('{{ arr }}');
     });
-    it('throws when used in a macro', function(){
-      (function() {
-        env.arrIndex.getString(ctxdata);
-      }).should.throw(/must be numbers/);
+    it('is undefined when used in a macro', function(){
+      var value = env.arrIndex.getString(ctxdata);
+      should.equal(value, undefined);
     });
   });
 
@@ -274,7 +261,7 @@ describe('Context data', function(){
     before(function() {
       ctxdata = {
         obj: { 
-          key: 'value' 
+          key: 'value'
         }
       };
       source = [
@@ -283,15 +270,13 @@ describe('Context data', function(){
         'objIndex[one]=One'
       ].join('\n');
     });
-    it('throws', function(){
-      (function() {
-        env.objProp.getString(ctxdata);
-      }).should.throw('Cannot resolve ctxdata of type object');
+    it('returns the raw string', function(){
+      var value = env.objProp.getString(ctxdata);
+      value.should.equal('{{ obj }}');
     });
-    it('throws when used in a macro', function(){
-      (function() {
-        env.objIndex.getString(ctxdata);
-      }).should.throw(/must be numbers/);
+    it('is undefined when used in a macro', function(){
+      var value = env.objIndex.getString(ctxdata);
+      should.equal(value, undefined);
     });
   });
 
