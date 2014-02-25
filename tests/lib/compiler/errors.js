@@ -1,26 +1,18 @@
-var Parser = require('../../../lib/l20n/parser').Parser;
-var Compiler = process.env.L20N_COV
-  ? require('../../../build/cov/lib/l20n/compiler').Compiler
-  : require('../../../lib/l20n/compiler').Compiler;
+'use strict';
 
-var parser = new Parser();
-var compiler = new Compiler();
+var should = require('should');
+
+var parse = require('../../../lib/l20n/parser').parseProperties;
+var compile = process.env.L20N_COV
+  ? require('../../../build/cov/lib/l20n/compiler').compile
+  : require('../../../lib/l20n/compiler').compile;
+var getPluralRule = require('../../../lib/l20n/plurals').getPluralRule;
 
 describe('Compiler errors:', function(){
-  var source, ast, env;
+  var source, env;
   beforeEach(function() {
-    ast = parser.parse(source);
-    ast.body['plural'] = {
-      type: 'Macro',
-      args: [{
-        type: 'Identifier',
-        name: 'n'
-      }],
-      expression: function(n) {
-        return (n == 1) ? 'one' : 'other';
-      }
-    };
-    env = compiler.compile(ast);
+    env = compile(parse(source));
+    env.__plural = getPluralRule('en-US');
   });
 
   describe('A complex string referencing an existing entity', function(){
@@ -45,24 +37,13 @@ describe('Compiler errors:', function(){
         'prompt[other]=Files'
       ].join('\n');
     });
-    it('throws a ValueError', function(){
-      (function() {
-        env.prompt.getString({n: 1});
-      }).should.throw(Compiler.ValueError);
-      (function() {
-        env.prompt.getString({n: 1});
-      }).should.throw(/unknown entry/);
-    });
-    it('provides the source of the string in the ValueError', function(){
-      try {
-        env.prompt.getString({n: 1});
-      } catch (e) {
-        e.should.have.property('source', 'One {{ file }}');
-      }
+    it('returns the raw string', function(){
+      var value = env.prompt.getString({n: 1});
+      value.should.equal('One {{ file }}');
     });
   });
 
-  describe('A ctxdata variable in the index', function(){
+  describe('A ctxdata variable in the index, with "other"', function(){
     before(function() {
       source = [
         'file=File',
@@ -75,12 +56,25 @@ describe('Compiler errors:', function(){
       env.prompt.getString({n: 1}).should.equal("One File");
     });
     it('throws an IndexError if n is not defined', function(){
-      (function() {
-        env.prompt.getString();
-      }).should.throw(Compiler.IndexError);
-      (function() {
-        env.prompt.getString();
-      }).should.throw(/unknown entry/);
+      var value = env.prompt.getString();
+      value.should.equal('Files');
+    });
+  });
+
+  describe('A ctxdata variable in the index, without "other"', function(){
+    before(function() {
+      source = [
+        'file=File',
+        'prompt={[ plural(n) ]}',
+        'prompt[one]=One {{ file }}',
+      ].join('\n');
+    });
+    it('is found', function(){
+      env.prompt.getString({n: 1}).should.equal("One File");
+    });
+    it('throws an IndexError if n is not defined', function(){
+      var value = env.prompt.getString();
+      should.equal(value, undefined);
     });
   });
 
