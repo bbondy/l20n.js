@@ -27,8 +27,7 @@
     },
     language: {
       set code(lang) {
-        ctx.setLocale(lang);
-        initLocale(true);
+        initLocale(lang, true);
       },
       get code() {
         return ctx.supportedLocales[0];
@@ -69,7 +68,6 @@
   if (window.document) {
     isPretranslated = (document.documentElement.lang === navigator.language);
 
-    ctx.setLocale(navigator.language);
     document.documentElement.lang = ctx.supportedLocales[0];
     document.documentElement.dir = getDirection(ctx.supportedLocales[0]);
 
@@ -236,22 +234,25 @@
     };
   }
 
-  function initLocale(forced) {
+  function initLocale(lang, forced) {
+    if (!lang) {
+      lang = navigator.language;
+    }
     var body = document.body;
     var script = body.querySelector('script[type="application/l10n"][lang="' +
-                                    ctx.supportedLocales[0] + '"]');
+                                    lang + '"]');
     if (script) {
       var locale = ctx.getLocale();
       if (!locale.isPartial) {
         locale.addAST(JSON.parse(script.innerHTML));
       }
     }
-    ctx.freeze(onReady.bind(null, forced));
-    document.documentElement.lang = ctx.supportedLocales[0];
-    document.documentElement.dir = getDirection(ctx.supportedLocales[0]);
+    ctx.requestLocales(lang, onReady.bind(null, forced));
   }
 
   function onReady(forced) {
+    document.documentElement.lang = ctx.supportedLocales[0];
+    document.documentElement.dir = getDirection(ctx.supportedLocales[0]);
     if (forced || !isPretranslated) {
       translateFragment();
     }
@@ -308,7 +309,7 @@
     var ast = {};
 
     if (!fragment) {
-      var sourceLocale = ctx.getLocale(ctx.supportedLocales.length - 1);
+      var sourceLocale = ctx.getLocale('en-US');
       if (!sourceLocale.isReady) {
         sourceLocale.build(null);
       }

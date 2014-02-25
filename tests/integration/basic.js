@@ -9,8 +9,8 @@ describe('A simple context with linkResource', function() {
   beforeEach(function(done) {
     ctx = L20n.getContext();
     ctx.resLinks.push(__dirname + '/fixtures/basic.properties');
-    ctx.setLocale('en-US'); // needed for the plural rule
-    ctx.freeze(done);
+    ctx.ready(done);
+    ctx.requestLocales('en-US');
   });
 
   it('should return the string value of brandName', function() {
