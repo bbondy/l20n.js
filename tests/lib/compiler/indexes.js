@@ -28,7 +28,7 @@ describe('Index', function(){
     });
   });
 
-  describe.skip('Reference from an attribute to the value of the same entity', function(){
+  describe('Reference from an attribute to the value of the same entity', function(){
     before(function() {
       source = [
         'foo=Foo',
