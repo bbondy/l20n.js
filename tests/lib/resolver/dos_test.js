@@ -4,7 +4,7 @@
 var createEntries, assert, Resolver;
 
 if (typeof navigator !== 'undefined') {
-  requireApp('sharedtest/test/unit/l10n/lib/compiler/header.js');
+  requireApp('sharedtest/test/unit/l10n/lib/resolver/header.js');
 } else {
   Resolver = require('./header.js').Resolver;
   createEntries = require('./header.js').createEntries;
