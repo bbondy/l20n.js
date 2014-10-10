@@ -1,7 +1,7 @@
 'use strict';
 
-/* global Entity, Locale, Context, L10nError */
-/* global getPluralRule, rePlaceables, PropertiesParser, compile */
+/* global Locale, Context, L10nError, PropertiesParser */
+/* global getPluralRule, rePlaceables, createEntity, compile */
 /* global translateDocument, io */
 /* global translateFragment, localizeElement, translateElement */
 /* global setL10nAttributes, getL10nAttributes */
@@ -63,7 +63,7 @@ navigator.mozL10n = {
       Error: L10nError,
       Context: Context,
       Locale: Locale,
-      Entity: Entity,
+      createEntity: createEntity,
       getPluralRule: getPluralRule,
       rePlaceables: rePlaceables,
       translateDocument: translateDocument,
