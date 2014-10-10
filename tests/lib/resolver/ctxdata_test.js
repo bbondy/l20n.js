@@ -125,7 +125,8 @@ describe('Context data', function(){
     });
 
     it('returns a string value', function(){
-      assert.strictEqual(Resolver.formatValue(env.stringProp, ctxdata), 'string');
+      assert.strictEqual(
+        Resolver.formatValue(env.stringProp, ctxdata), 'string');
     });
 
     it('is undefined when used in a macro', function(){
@@ -134,7 +135,8 @@ describe('Context data', function(){
     });
 
     it('digit returns a string value', function(){
-      assert.strictEqual(Resolver.formatValue(env.stringNumProp, ctxdata), '1');
+      assert.strictEqual(
+        Resolver.formatValue(env.stringNumProp, ctxdata), '1');
     });
 
     it('digit returns undefined when used in a macro', function(){

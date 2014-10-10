@@ -25,6 +25,7 @@ if (typeof navigator !== 'undefined') {
 var propertiesParser = new PropertiesParser();
 
 function createEntries(source) {
+  /* jshint -W089 */
   var entries = Object.create(null);
   var ast = propertiesParser.parse(null, source);
 

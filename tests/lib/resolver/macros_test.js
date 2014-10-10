@@ -30,9 +30,10 @@ describe('Macros', function(){
 
     it('throws when resolving (not calling) a macro in a complex ' +
        'string', function() {
-      assert.strictEqual(Resolver.formatValue(env.placeMacro, ctxdata), '{{ plural }}');
-      assert.strictEqual(Resolver.formatValue(env.placeRealMacro, ctxdata),
-                         '{{ __plural }}');
+      assert.strictEqual(
+        Resolver.formatValue(env.placeMacro, ctxdata), '{{ plural }}');
+      assert.strictEqual(
+        Resolver.formatValue(env.placeRealMacro, ctxdata), '{{ __plural }}');
     });
 
   });
