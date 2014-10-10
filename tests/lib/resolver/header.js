@@ -11,9 +11,9 @@ if (typeof navigator !== 'undefined') {
   PropertiesParser = L10n.PropertiesParser;
 } else {
   var L10n = {
-    compile: process.env.L20N_COV ?
-      require('../../../build/cov/lib/l20n/compiler').compile :
-      require('../../../lib/l20n/compiler').compile,
+    Resolver: process.env.L20N_COV ?
+      require('../../../build/cov/lib/l20n/resolver'):
+      require('../../../lib/l20n/resolver'),
     getPluralRule: require('../../../lib/l20n/plurals').getPluralRule
   };
 
@@ -24,12 +24,18 @@ if (typeof navigator !== 'undefined') {
 
 var propertiesParser = new PropertiesParser();
 
-function compile(source) {
+function createEntries(source) {
+  var entries = Object.create(null);
   var ast = propertiesParser.parse(null, source);
-  var env = L10n.compile(null, ast);
-  env.__plural = L10n.getPluralRule('en-US');
-  return env;
+
+  for (var id in ast) {
+    entries[id] = L10n.Resolver.createEntity(id, ast[id], entries);
+  }
+
+  entries.__plural = L10n.getPluralRule('en-US');
+  return entries;
 }
 
 exports.assert = assert;
-exports.compile = compile;
+exports.createEntries = createEntries;
+exports.Resolver = L10n.Resolver;

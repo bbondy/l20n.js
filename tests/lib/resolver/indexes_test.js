@@ -1,11 +1,12 @@
 /* global it, before, beforeEach, assert:true, describe, requireApp */
 'use strict';
-var compile, assert;
+var createEntries, assert, Resolver;
 
 if (typeof navigator !== 'undefined') {
   requireApp('sharedtest/test/unit/l10n/lib/compiler/header.js');
 } else {
-  compile = require('./header.js').compile;
+  Resolver = require('./header.js').Resolver;
+  createEntries = require('./header.js').createEntries;
   assert = require('./header.js').assert;
 }
 
@@ -13,7 +14,7 @@ describe('Index', function(){
   var source, env;
 
   beforeEach(function() {
-    env = compile(source);
+    env = createEntries(source);
   });
 
   describe('Different values of index', function(){
@@ -31,7 +32,7 @@ describe('Index', function(){
     });
 
     it('works when the index is a regular entity', function() {
-      var value = env.indexEntity.toString({n: 1});
+      var value = Resolver.formatValue(env.indexEntity, {n: 1});
       assert.strictEqual(value, 'One entity');
     });
     it('throws when the index is an uncalled macro (resolve)', function() {
@@ -41,11 +42,11 @@ describe('Index', function(){
     });
     it('returns undefined when the index is an uncalled macro (toString)',
       function() {
-      var value = env.indexUncalledMacro.toString({n: 1});
+      var value = Resolver.formatValue(env.indexUncalledMacro, {n: 1});
       assert.strictEqual(value, undefined);
     });
     it('works when the index is a called macro', function() {
-      var value = env.indexCalledMacro.toString({n: 1});
+      var value = Resolver.formatValue(env.indexCalledMacro, {n: 1});
       assert.strictEqual(value, 'One called macro');
     });
 
@@ -61,7 +62,7 @@ describe('Index', function(){
     });
 
     it('is undefined', function() {
-      var value = env.foo.toString();
+      var value = Resolver.formatValue(env.foo);
       assert.strictEqual(value, undefined);
     });
 
@@ -79,9 +80,9 @@ describe('Index', function(){
     });
 
     it('value of the attribute is undefined', function() {
-      var entity = env.foo.valueOf();
+      var entity = Resolver.formatEntity(env.foo);
       assert.strictEqual(entity.value, 'Foo');
-      assert.strictEqual(entity.attributes.attr, undefined);
+      assert.strictEqual(entity.attrs.attr, undefined);
     });
 
   });
