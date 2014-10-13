@@ -79,7 +79,6 @@ function compileAndPrint(err, code) {
   } else {
     try {
       ast = parse(code.toString());
-    console.log(ast);
     } catch (e) {
       logError(e);
     }
