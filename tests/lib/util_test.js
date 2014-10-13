@@ -17,7 +17,7 @@ function digest(str) {
   return cur;
 }
 
-describe('walkContent', function() {
+describe.skip('walkContent', function() {
   var L10n, source, ast;
 
   before(function(done) {

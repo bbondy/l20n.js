@@ -4,7 +4,7 @@
 
 var assert, propertiesParser;
 
-describe('pseudo strategy', function() {
+describe.skip('pseudo strategy', function() {
   var PSEUDO_STRATEGIES, walkContent, strategy, source, ast;
 
   before(function(done) {

@@ -42,7 +42,7 @@ describe('Reference bombs', function(){
     });
   });
 
-  describe('Quadratic Blowup', function(){
+  describe.skip('Quadratic Blowup', function(){
     before(function() {
       source = [
       '# Project Gutenberg\'s Alice\'s Adventures in Wonderland,',
