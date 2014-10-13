@@ -8,8 +8,8 @@ if (typeof navigator !== 'undefined') {
   var assert = require('assert');
   var L10n = {
     PropertiesParser: process.env.L20N_COV ?
-      require('../../build/cov/lib/l20n/parser').PropertiesParser
-      : require('../../lib/l20n/format/properties/parser').PropertiesParser
+      require('../../../build/cov/lib/l20n/parser').PropertiesParser
+      : require('../../../lib/l20n/format/properties/parser').PropertiesParser
   };
 }
 
