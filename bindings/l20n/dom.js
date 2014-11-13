@@ -1,7 +1,7 @@
 'use strict';
 
 /* jshint -W104 */
-/* global Promise, L10nError, fireLocalizedEvent */
+/* global Promise, L10nError, dispatchEvent */
 /* exported translateFragment, translateDocument */
 /* exported setL10nAttributes, getL10nAttributes */
 
@@ -34,7 +34,7 @@ function translateDocument(supported) {
   document.documentElement.lang = supported[0];
   document.documentElement.dir = getDirection(supported[0]);
   return translateFragment.call(this, document.documentElement).then(
-      fireLocalizedEvent.bind(this, supported));
+      dispatchEvent.bind(this, 'mozDOMLocalized', supported));
 }
 
 

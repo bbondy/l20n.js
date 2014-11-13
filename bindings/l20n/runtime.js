@@ -1,34 +1,36 @@
 'use strict';
 
-/* global Env, io */
+/* exported getDefaultLanguage, getAvailableLanguages */
 
-if (window.document) {
-  init();
-}
+window.addEventListener('languagechange', navigator.mozL10n);
+document.addEventListener('additionallanguageschange', navigator.mozL10n);
+document.addEventListener('supportedlanguageschange', navigator.mozL10n);
 
 function init() {
   /* jshint boss:true */
   var nodes = document.head
-                      .querySelectorAll('link[rel="localization"],' +
-                                        'link[rel="manifest"]');
+                      .querySelectorAll('link[rel="localization"]');
   for (var i = 0, node; node = nodes[i]; i++) {
-    var type = node.getAttribute('rel') || node.nodeName.toLowerCase();
-    switch (type) {
-      case 'manifest':
-        navigator.mozL10n.env = new Env(
-          window.document ? document.URL : null,
-          io.loadJSON(node.getAttribute('href')));
-        break;
-      case 'localization':
-        navigator.mozL10n.resources.push(node.getAttribute('href'));
-        break;
-    }
+    navigator.mozL10n.resources.push(node.getAttribute('href'));
   }
 
   navigator.mozL10n.request(navigator.languages);
   navigator.mozL10n.observer.start();
+}
 
-  window.addEventListener('languagechange', function langchange() {
-    navigator.mozL10n.request(navigator.languages);
-  });
+// XXX take last found instead of first?
+// XXX optimize the number of qS?
+function getDefaultLanguage() {
+  var meta = document.head.querySelector('meta[name="defaultLanguage"]');
+  return meta.getAttribute('content').trim();
+}
+
+function getAvailableLanguages() {
+  var meta = document.head.querySelector('meta[name="availableLanguages"]');
+  return meta.getAttribute('content').split(',').map(
+    Function.prototype.call, String.prototype.trim);
+}
+
+if (window.document) {
+  init();
 }
