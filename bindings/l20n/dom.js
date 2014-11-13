@@ -1,7 +1,7 @@
 'use strict';
 
 /* jshint -W104 */
-/* global Promise, L10nError */
+/* global Promise, L10nError, fireLocalizedEvent */
 /* exported translateFragment, translateDocument */
 /* exported setL10nAttributes, getL10nAttributes */
 
@@ -29,6 +29,14 @@ function getTranslatables(element) {
   return nodes.concat.apply(
     nodes, element.querySelectorAll('*[data-l10n-id]'));
 }
+
+function translateDocument(supported) {
+  document.documentElement.lang = supported[0];
+  document.documentElement.dir = getDirection(supported[0]);
+  return translateFragment.call(this, document.documentElement).then(
+      fireLocalizedEvent.bind(this, supported));
+}
+
 
 function translateFragment(element) {
   return Promise.all(
