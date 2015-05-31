@@ -29,6 +29,7 @@ module.exports = function (grunt) {
   require('load-grunt-tasks')(grunt);
 
   grunt.initConfig({
+    gobble: require('./build/config/gobble'),
     webpack: require('./build/config/webpack'),
     copy: require('./build/config/copy'),
     clean: require('./build/config/clean'),
