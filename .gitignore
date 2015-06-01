@@ -4,3 +4,4 @@ tools/*.l20n
 tools/*.properties
 tools/*.json
 tools/perf/*.json
+.gobble-build
