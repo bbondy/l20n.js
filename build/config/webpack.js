@@ -11,7 +11,7 @@ module.exports = {
     },
     output: {
       path: path('../dist'),
-      filename: '[name]/l20n.js',
+      filename: 'webpack/[name]/l20n.js',
       libraryTarget: 'this',
 
     },
@@ -32,7 +32,7 @@ module.exports = {
     },
     output: {
       path: path('../dist'),
-      filename: '[name]/l20n.js',
+      filename: 'webpack/[name]/l20n.js',
       libraryTarget: 'this',
 
     },
@@ -60,12 +60,14 @@ module.exports = {
       }]
     }
   },
-  node: {
+  shell: {
     context: path('../../src'),
-    entry: './bindings/node/index.js',
+    entry: {
+      shell: './bindings/node/index.js',
+    },
     output: {
       path: path('../dist'),
-      filename: './node/l20n.js',
+      filename: 'webpack/[name]/l20n.js',
       libraryTarget: 'commonjs2',
     },
     externals: {

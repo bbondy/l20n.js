@@ -5,15 +5,12 @@ module.exports = {
     files: [
       {
         expand: true,
-        cwd: 'build/dist/gaia',
-        src: ['l10n.js', 'l20n.js'],
-        dest: 'build/dist/stage/shared/js/'
-      },
-      {
-        expand: true,
-        cwd: 'build/dist/gaiabuild',
-        src: ['l10n.js', 'qps.js'],
-        dest: 'build/dist/stage/build/l10n/'
+        cwd: 'build/dist/gobble/runtime/web/',
+        src: ['index.js'],
+        dest: 'build/dist/stage/shared/js/',
+        rename: function(dest) {
+          return dest + 'l20n.js';
+        }
       },
       {
         expand: true,

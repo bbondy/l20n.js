@@ -72,7 +72,7 @@ module.exports = function (grunt) {
 
   grunt.registerTask('gaia', [
     'lint',
-    'webpack:gaia',
+    'gobble:web',
     'copy:stage'
   ]);
 

@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = {
-  gaia: {
+  web: {
     dest: 'build/dist/gobble',
     force: true,
     config: function () {
@@ -11,8 +11,8 @@ module.exports = {
         sourceMap: false,
         strict: true,
         type: 'cjs',
-        banner: '(function() {',
-        footer: '})();'
+        banner: '(function() {\n',
+        footer: '\n})();'
       });
     }
   },
