@@ -2,9 +2,9 @@
 
 import { prioritizeLocales } from '../../lib/intl';
 import { initViews } from './service';
-import { qps } from '../../lib/pseudo';
 
-const rtlList = ['ar', 'he', 'fa', 'ps', 'qps-plocm', 'ur'];
+const rtlLangs = ['ar', 'he', 'fa', 'ps', 'qps-plocm', 'ur'];
+const qpsLangs = ['qps-ploc', 'qps-plocm'];
 
 export function getAdditionalLanguages() {
   if (navigator.mozApps && navigator.mozApps.getAdditionalLanguages) {
@@ -40,7 +40,7 @@ export function changeLanguage(
   requestedLangs) {
 
   let allAvailableLangs = Object.keys(availableLangs).concat(
-    additionalLangs || []).concat(Object.keys(qps));
+    additionalLangs || []).concat(qpsLangs);
   let newLangs = prioritizeLocales(
     defaultLang, allAvailableLangs, requestedLangs);
 
@@ -58,7 +58,7 @@ export function changeLanguage(
 }
 
 function getDirection(code) {
-  return (rtlList.indexOf(code) >= 0) ? 'rtl' : 'ltr';
+  return (rtlLangs.indexOf(code) >= 0) ? 'rtl' : 'ltr';
 }
 
 function arrEqual(arr1, arr2) {
@@ -85,7 +85,7 @@ function getLangSource(appVersion, availableLangs, additionalLangs, code) {
     }
   }
 
-  if ((code in qps) && !(code in availableLangs)) {
+  if ((qpsLangs.indexOf(code) >= 0) && !(code in availableLangs)) {
     return 'qps';
   }
 

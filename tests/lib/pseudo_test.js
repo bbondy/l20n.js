@@ -6,12 +6,12 @@ var assert;
 var PropertiesParser;
 
 describe('pseudo strategy', function() {
-  var PSEUDO, walkContent, strategy, source, ast, walked;
+  var getPseudo, walkContent, strategy, source, ast, walked;
 
   before(function(done) {
     if (typeof navigator !== 'undefined') {
       require('/shared/js/l10n.js', function() {
-        PSEUDO = navigator.mozL10n.qps;
+        getPseudo = navigator.mozL10n.qps;
         var L10n = navigator.mozL10n._getInternalAPI();
         PropertiesParser = L10n.PropertiesParser;
         walkContent = L10n.walkContent;
@@ -19,7 +19,7 @@ describe('pseudo strategy', function() {
       });
     } else {
       assert = require('assert');
-      PSEUDO = require('../../src/lib/pseudo').qps;
+      getPseudo = require('../../src/lib/pseudo').getPseudo;
       walkContent = require('../../src/lib/pseudo').walkContent;
       PropertiesParser =
         require('../../src/lib/format/properties/parser');
@@ -46,7 +46,7 @@ describe('pseudo strategy', function() {
   describe('accented English', function(){
 
     before(function() {
-      strategy = PSEUDO['qps-ploc'].translate;
+      strategy = getPseudo('qps-ploc').translate;
       source = [
         'foo=Foo',
 
@@ -112,7 +112,7 @@ describe('pseudo strategy', function() {
     /* jshint -W100 */
 
     before(function() {
-      strategy = PSEUDO['qps-plocm'].translate;
+      strategy = getPseudo('qps-plocm').translate;
       source = [
         'foo=Foo',
 

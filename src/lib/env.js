@@ -4,7 +4,7 @@ import Context from './context';
 import { createEntry } from './resolver';
 import PropertiesParser from './format/properties/parser';
 import L20nParser from './format/l20n/parser';
-import { walkContent, qps } from './pseudo';
+import { walkContent, getPseudo } from './pseudo';
 import { emit, addEventListener, removeEventListener } from './events';
 
 const parsers = {
@@ -93,7 +93,8 @@ export default class Env {
 function createEntries(lang, ast) {
   let entries = Object.create(null);
   let create = lang.src === 'qps' ?
-    createPseudoEntry : createEntry;
+    createPseudoEntry.bind(null, getPseudo(lang.code)) :
+    createEntry;
 
   for (var i = 0, node; node = ast[i]; i++) {
     entries[node.$i] = create(node, lang);
@@ -102,7 +103,7 @@ function createEntries(lang, ast) {
   return entries;
 }
 
-function createPseudoEntry(node, lang) {
+function createPseudoEntry(qps, node, lang) {
   return createEntry(
-    walkContent(node, qps[lang.code].translate), lang);
+    walkContent(node, qps.translate), lang);
 }
