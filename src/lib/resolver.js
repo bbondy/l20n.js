@@ -9,33 +9,30 @@ const MAX_PLACEABLE_LENGTH = 2500;
 const FSI = '\u2068';
 const PDI = '\u2069';
 
-const resolutionChain = new WeakSet();
-
 export function format(ctx, lang, args, entity) {
+  const locals = {
+    resolutionChain: new Set()
+  };
+  return formatValue(locals, ctx, lang, args, entity);
+}
+
+function formatValue(locals, ctx, lang, args, entity) {
   if (typeof entity === 'string') {
-    return [{}, entity];
+    return [locals, entity];
   }
 
-  if (resolutionChain.has(entity)) {
+  if (locals.resolutionChain.has(entity)) {
     throw new L10nError('Cyclic reference detected');
   }
 
-  resolutionChain.add(entity);
-
-  let rv;
-  // if format fails, we want the exception to bubble up and stop the whole
-  // resolving process;  however, we still need to remove the entity from the
-  // resolution chain
-  try {
-    rv = resolveValue(
-      {}, ctx, lang, args, entity.value, entity.index);
-  } finally {
-    resolutionChain.delete(entity);
-  }
+  locals.resolutionChain.add(entity);
+  const rv = resolveValue(
+    locals, ctx, lang, args, entity.value, entity.index);
+  locals.resolutionChain.delete(entity);
   return rv;
 }
 
-function resolveIdentifier(ctx, lang, args, id) {
+function resolveIdentifier(locals, ctx, lang, args, id) {
   if (KNOWN_MACROS.indexOf(id) > -1) {
     return [{}, ctx._getMacro(lang, id)];
   }
@@ -58,7 +55,7 @@ function resolveIdentifier(ctx, lang, args, id) {
   const entity = ctx._getEntity(lang, id);
 
   if (entity) {
-    return format(ctx, lang, args, entity);
+    return formatValue(locals, ctx, lang, args, entity);
   }
 
   throw new L10nError('Unknown reference: ' + id);
@@ -68,7 +65,7 @@ function subPlaceable(locals, ctx, lang, args, id) {
   let res;
 
   try {
-    res = resolveIdentifier(ctx, lang, args, id);
+    res = resolveIdentifier(locals, ctx, lang, args, id);
   } catch (err) {
     return [{ error: err }, '{{ ' + id + ' }}'];
   }
@@ -104,7 +101,7 @@ function interpolate(locals, ctx, lang, args, arr) {
   }, [locals, '']);
 }
 
-function resolveSelector(ctx, lang, args, expr, index) {
+function resolveSelector(locals, ctx, lang, args, expr, index) {
   //XXX: Dehardcode!!!
   let selectorName;
   if (index[0].type === 'call' && index[0].expr.type === 'prop' &&
@@ -113,7 +110,8 @@ function resolveSelector(ctx, lang, args, expr, index) {
   } else {
     selectorName = index[0].name;
   }
-  const selector = resolveIdentifier(ctx, lang, args, selectorName)[1];
+  const selector = resolveIdentifier(
+    locals, ctx, lang, args, selectorName)[1];
 
   if (typeof selector !== 'function') {
     // selector is a simple reference to an entity or args
@@ -121,7 +119,8 @@ function resolveSelector(ctx, lang, args, expr, index) {
   }
 
   const argValue = index[0].args ?
-    resolveIdentifier(ctx, lang, args, index[0].args[0].name)[1] : undefined;
+    resolveIdentifier(locals, ctx, lang, args, index[0].args[0].name)[1] :
+    undefined;
 
   if (selectorName === 'plural') {
     // special cases for zero, one, two if they are defined on the hash
@@ -157,7 +156,7 @@ function resolveValue(locals, ctx, lang, args, expr, index) {
   // otherwise, it's a dict
   if (index) {
     // try to use the index in order to select the right dict member
-    const selector = resolveSelector(ctx, lang, args, expr, index);
+    const selector = resolveSelector(locals, ctx, lang, args, expr, index);
     if (selector in expr) {
       return resolveValue(locals, ctx, lang, args, expr[selector]);
     }
