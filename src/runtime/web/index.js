@@ -26,7 +26,7 @@ function init() {
   const service = new Service(fetch);
   window.addEventListener('languagechange', service);
   document.addEventListener('additionallanguageschange', service);
-  document.l10n.languages = navigator.languages;
+  document.l10n.languages = navigator.languages || [navigator.language];
 }
 
 whenInteractive(init);

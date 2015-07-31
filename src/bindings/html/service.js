@@ -22,14 +22,15 @@ export class Service {
       err => console.warn(err));
   }
 
-  requestLanguages(requestedLangs = navigator.languages) {
+  requestLanguages(requestedLangs) {
     return changeLanguages.call(
       this, getAdditionalLanguages(), requestedLangs);
   }
 
   handleEvent(evt) {
     return changeLanguages.call(
-      this, evt.detail || getAdditionalLanguages(), navigator.languages);
+      this, evt.detail || getAdditionalLanguages(),
+      navigator.languages || [navigator.language]);
   }
 }
 
