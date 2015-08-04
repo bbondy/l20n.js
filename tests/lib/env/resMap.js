@@ -13,7 +13,7 @@ describe.skip('Creating a context', function() {
   var res2 = path + '/fixtures/en-US.properties';
 
   beforeEach(function() {
-    env = new Env('en-US', fetch);
+    env = new Env(fetch);
   });
 
   it('populates resMap with one ctx', function() {

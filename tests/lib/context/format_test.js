@@ -20,7 +20,7 @@ describe('One fallback locale', function() {
   var env, ctx;
 
   beforeEach(function(done) {
-    env = new Env('en-US', fetch);
+    env = new Env(fetch);
     ctx = env.createContext([path + '/fixtures/{locale}.properties']);
     ctx.fetch(langs).then(() => done(), done);
   });

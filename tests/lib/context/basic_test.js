@@ -14,7 +14,7 @@ describe('A simple context with one resource', function() {
   var env, ctx;
 
   beforeEach(function(done) {
-    env = new Env('en-US', fetch);
+    env = new Env(fetch);
     ctx = env.createContext([path + '/fixtures/basic.properties']);
     ctx.fetch(langs).then(() => done(), done);
   });

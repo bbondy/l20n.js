@@ -49,7 +49,7 @@ export class Context {
 
     return Promise.all(
       this._resIds.map(
-        this._env._getResource.bind(this._env, langs[0]))).then(
+        this._env._getResource.bind(this._env, langs))).then(
           () => langs);
   }
 

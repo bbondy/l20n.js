@@ -52,11 +52,12 @@ var L20n = require('l20n/compat');
 ```javascript
 import { Env, fetch } from 'l20n';
 
-const env = new Env('en-US', fetch);
+const env = new Env(fetch);
 const ctx = env.createContext(['{locale}.l20n']);
 const langs = [
   {code: 'de-DE'},
   {code: 'de'},
+  {code: 'en-US'},
 ];
 
 ctx.fetch(langs).then(init);

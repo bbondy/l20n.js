@@ -14,14 +14,19 @@ export class View {
     this.htmloptimizer = htmloptimizer;
     this.doc = htmloptimizer.document;
 
+    this.sourceLang = {
+      code: 'en-US',
+      dir: 'ltr',
+      src: 'app',
+    };
+
     this.isEnabled = this.doc.querySelector('link[rel="localization"]');
     // XXX we should check if the app uses l10n.js instead, but due to lazy 
     // loading we can't rely on querySelector.
     this.isLegacy = !this.doc.querySelector('script[src$="l20n.js"]');
 
     const EnvClass = this.isLegacy ? LegacyEnv : Env;
-    this.env = new EnvClass(
-      htmloptimizer.config.GAIA_DEFAULT_LOCALE, fetch);
+    this.env = new EnvClass(fetch);
     this.ctx = this.env.createContext(getResourceLinks(this.doc.head));
 
     // add the url of the currently processed webapp to all errors
@@ -59,7 +64,11 @@ export class View {
 
   translateDocument(code) {
     const dir = getDirection(code);
-    const langs = [{ code, dir, src: 'app' }];
+    const langs = [
+      { code, dir, src: 'app' },
+      this.sourceLang
+    ];
+
     const setDocLang = () => {
       this.doc.documentElement.lang = code;
       this.doc.documentElement.dir = dir;
@@ -70,12 +79,11 @@ export class View {
   }
 
   serializeResources(code) {
-    const lang = {
-      code,
-      dir: getDirection(code),
-      src: code in qps ? 'qps' : 'app'
-    };
-    return fetchContext(this.ctx, lang).then(() => {
+    const langs = [
+      { code, dir: getDirection(code), src: code in qps ? 'qps' : 'app' },
+      this.sourceLang
+    ];
+    return fetchContext(this.ctx, langs).then(() => {
       const [errors, entries] = this.isLegacy ?
         serializeLegacyContext(this.ctx, lang) :
         serializeContext(this.ctx, lang);
@@ -126,8 +134,8 @@ function stopBuild(err) {
   }
 }
 
-function fetchContext(ctx, lang) {
-  const sourceLang = { code: 'en-US', dir: 'ltr', src: 'app' };
+function fetchContext(ctx, langs) {
   return Promise.all(
-    [sourceLang, lang].map(lang => ctx.fetch([lang])));
+    // fetch each lang with the last one as default
+    langs.map(lang => ctx.fetch([lang, langs[langs.length - 1]])));
 }

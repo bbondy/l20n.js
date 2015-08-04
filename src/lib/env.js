@@ -12,8 +12,7 @@ const parsers = {
 };
 
 export class Env {
-  constructor(defaultLang, fetch) {
-    this.defaultLang = defaultLang;
+  constructor(fetch) {
     this.fetch = fetch;
 
     this._resCache = Object.create(null);
@@ -50,8 +49,9 @@ export class Env {
     return pseudoentries;
   }
 
-  _getResource(lang, res) {
+  _getResource(langs, res) {
     const cache = this._resCache;
+    const lang = langs[0];
     const id = res + lang.code + lang.src;
 
     if (cache[id]) {
@@ -72,8 +72,8 @@ export class Env {
     };
 
     const langToFetch = lang.src === 'qps' ?
-      { code: this.defaultLang, src: 'app' } :
-      lang;
+      // fetch the last (default) language for qps
+      langs[langs.length - 1] : lang;
 
     return cache[id] = this.fetch(res, langToFetch).then(
       saveEntries, recover);
