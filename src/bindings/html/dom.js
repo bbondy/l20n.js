@@ -29,11 +29,25 @@ const allowed = {
   }
 };
 
+function zip(keys, values) {
+  return keys.reduce(
+    (seq, cur, i) => { seq[cur] = values[i]; return seq; },
+    Object.create(null));
+}
+
 export function setAttributes(element, id, args) {
-  element.setAttribute('data-l10n-id', id);
-  if (args) {
-    element.setAttribute('data-l10n-args', JSON.stringify(args));
+  if (!args) {
+    return element.setAttribute('data-l10n-id', id);
   }
+
+  const argKeys = Object.keys(args);
+  const argEntries = argKeys.map(key => args[key]);
+
+  Promise.all(argEntries).then(argValues => {
+    const args = zip(argKeys, argValues);
+    element.setAttribute('data-l10n-id', id);
+    element.setAttribute('data-l10n-args', JSON.stringify(args));
+  });
 }
 
 export function getAttributes(element) {
