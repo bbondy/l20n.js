@@ -9,6 +9,12 @@ const htmlEntities = {
   '>': '&gt;',
 };
 
+export const IView = new Map([
+  ['observe', Symbol('observe')],
+  ['disconnect', Symbol('disconnect')],
+  ['resolveEntity', Symbol('resolveEntity')],
+]);
+
 export function setAttributes(element, id, args) {
   element.setAttribute('data-l10n-id', id);
   if (args) {
@@ -79,7 +85,7 @@ function getElementsTranslation(view, langs, elems) {
     ] : id;
   });
 
-  return view._resolveEntities(langs, keys);
+  return view[IView.get('resolveEntities')](langs, keys);
 }
 
 function translateElements(view, langs, elements) {
@@ -88,9 +94,9 @@ function translateElements(view, langs, elements) {
 }
 
 function applyTranslations(view, elems, translations) {
-  view._disconnect();
+  view[IView.get('disconnect')]();
   for (let i = 0; i < elems.length; i++) {
     overlayElement(elems[i], translations[i]);
   }
-  view._observe();
+  view[IView.get('observe')]();
 }

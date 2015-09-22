@@ -3,7 +3,7 @@
 import { qps } from '../../lib/pseudo';
 import { getResourceLinks, documentReady } from './head';
 import {
-  setAttributes, getAttributes, translateFragment, translateMutations
+  IView, setAttributes, getAttributes, translateFragment, translateMutations
 } from './dom';
 
 const observerConfig = {
@@ -31,8 +31,9 @@ export class View {
     });
 
     const observer = new MutationObserver(onMutations.bind(this));
-    this._observe = () => observer.observe(doc, observerConfig);
-    this._disconnect = () => observer.disconnect();
+    this[IView.get('observe')] =
+      () => observer.observe(this.doc, observerConfig);
+    this[IView.get('disconnect')] = () => observer.disconnect();
 
     this.resolvedLanguages().then(
       langs => translateDocument(this, langs));
@@ -48,7 +49,7 @@ export class View {
       client => client.requestLanguages(langs));
   }
 
-  _resolveEntities(langs, keys) {
+  [IView.get('resolveEntities')](langs, keys) {
     return this._interactive.then(
       client => client.resolveEntities(this, langs, keys));
   }
