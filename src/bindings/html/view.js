@@ -8,7 +8,9 @@ import {
 
 const pView = {
   doc: Symbol('doc'),
+  init: Symbol('init'),
   interactive: Symbol('interactive'),
+  translateDocument: Symbol('translateDocument'),
 };
 
 const observerConfig = {
@@ -27,7 +29,7 @@ export class View {
     this[pDom.observe] = () => observer.observe(doc, observerConfig);
     this[pDom.disconnect] = () => observer.disconnect();
     this[pView.interactive] = documentReady().then(
-      () => init(this, client));
+      () => this[pView.init](client));
 
     this.qps = qps;
     this.ready = new Promise(function(resolve) {
@@ -39,7 +41,30 @@ export class View {
     });
 
     this.resolvedLanguages().then(
-      langs => translateDocument(this, langs));
+      langs => this[pView.translateDocument](langs));
+  }
+
+  [pView.init](client) {
+    this[pDom.observe]();
+    return client.registerView(
+      this, getResourceLinks(this[pView.doc].head)).then(
+        () => client);
+  }
+
+  [pView.translateDocument](langs) {
+    const doc = this[pView.doc];
+
+    if (langs[0].code === doc.documentElement.getAttribute('lang')) {
+      return Promise.resolve().then(
+        () => dispatchEvent(doc, 'DOMLocalized', langs));
+    }
+
+    return translateFragment(this, langs, doc.documentElement).then(
+      () => {
+        doc.documentElement.lang = langs[0].code;
+        doc.documentElement.dir = langs[0].dir;
+        dispatchEvent(doc, 'DOMLocalized', langs);
+      });
   }
 
   [pDom.resolveEntities](langs, keys) {
@@ -77,32 +102,9 @@ export class View {
 View.prototype.setAttributes = setAttributes;
 View.prototype.getAttributes = getAttributes;
 
-function init(view, client) {
-  view[pDom.observe]();
-  return client.registerView(
-    view, getResourceLinks(view[pView.doc].head)).then(
-      () => client);
-}
-
 function onMutations(mutations) {
   return this.resolvedLanguages().then(
     langs => translateMutations(this, langs, mutations));
-}
-
-export function translateDocument(view, langs) {
-  const doc = view[pView.doc];
-
-  if (langs[0].code === doc.documentElement.getAttribute('lang')) {
-    return Promise.resolve().then(
-      () => dispatchEvent(doc, 'DOMLocalized', langs));
-  }
-
-  return translateFragment(view, langs, doc.documentElement).then(
-    () => {
-      doc.documentElement.lang = langs[0].code;
-      doc.documentElement.dir = langs[0].dir;
-      dispatchEvent(doc, 'DOMLocalized', langs);
-    });
 }
 
 function dispatchEvent(root, name, langs) {

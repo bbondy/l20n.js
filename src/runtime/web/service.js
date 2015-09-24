@@ -2,7 +2,7 @@
 
 import { Env } from '../../lib/env';
 import { fetch } from './io';
-import { translateDocument } from '../../bindings/html/view';
+import { pView } from '../../bindings/html/view';
 import { getMeta, documentReady } from '../../bindings/html/head';
 import { negotiateLanguages } from '../../bindings/html/langs';
 
@@ -62,7 +62,7 @@ export function getAdditionalLanguages() {
 function translateViews(langs) {
   const views = Array.from(this.ctxs.keys());
   return Promise.all(
-    views.map(view => translateDocument(view, langs)));
+    views.map(view => view[pView.translateDocument](langs)));
 }
 
 function changeLanguages(additionalLangs, requestedLangs) {
