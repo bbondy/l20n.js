@@ -3,8 +3,13 @@
 import { qps } from '../../lib/pseudo';
 import { getResourceLinks, documentReady } from './head';
 import {
-  IView, setAttributes, getAttributes, translateFragment, translateMutations
+  pDom, setAttributes, getAttributes, translateFragment, translateMutations
 } from './dom';
+
+const pView = {
+  doc: Symbol('doc'),
+  interactive: Symbol('interactive'),
+};
 
 const observerConfig = {
   attributes: true,
@@ -16,12 +21,15 @@ const observerConfig = {
 
 export class View {
   constructor(client, doc) {
-    this._doc = doc;
-    this.qps = qps;
+    const observer = new MutationObserver(onMutations.bind(this));
 
-    this._interactive = documentReady().then(
+    this[pView.doc] = doc;
+    this[pDom.observe] = () => observer.observe(doc, observerConfig);
+    this[pDom.disconnect] = () => observer.disconnect();
+    this[pView.interactive] = documentReady().then(
       () => init(this, client));
 
+    this.qps = qps;
     this.ready = new Promise(function(resolve) {
       const viewReady = function(evt) {
         doc.removeEventListener('DOMLocalized', viewReady);
@@ -30,39 +38,34 @@ export class View {
       doc.addEventListener('DOMLocalized', viewReady);
     });
 
-    const observer = new MutationObserver(onMutations.bind(this));
-    this[IView.get('observe')] =
-      () => observer.observe(this.doc, observerConfig);
-    this[IView.get('disconnect')] = () => observer.disconnect();
-
     this.resolvedLanguages().then(
       langs => translateDocument(this, langs));
   }
 
+  [pDom.resolveEntities](langs, keys) {
+    return this[pView.interactive].then(
+      client => client.resolveEntities(this, langs, keys));
+  }
+
   resolvedLanguages() {
-    return this._interactive.then(
+    return this[pView.interactive].then(
       client => client.languages);
   }
 
   requestLanguages(langs) {
-    return this._interactive.then(
+    return this[pView.interactive].then(
       client => client.requestLanguages(langs));
   }
 
-  [IView.get('resolveEntities')](langs, keys) {
-    return this._interactive.then(
-      client => client.resolveEntities(this, langs, keys));
+  formatValues(...keys) {
+    return this[pView.interactive].then(
+      client => client.formatValues(this, keys));
   }
 
   formatValue(id, args) {
-    return this._interactive.then(
+    return this[pView.interactive].then(
       client => client.formatValues(this, [[id, args]])).then(
         values => values[0]);
-  }
-
-  formatValues(...keys) {
-    return this._interactive.then(
-      client => client.formatValues(this, keys));
   }
 
   translateFragment(frag) {
@@ -75,9 +78,10 @@ View.prototype.setAttributes = setAttributes;
 View.prototype.getAttributes = getAttributes;
 
 function init(view, client) {
-  view._observe();
-  return client.registerView(view, getResourceLinks(view._doc.head)).then(
-    () => client);
+  view[pDom.observe]();
+  return client.registerView(
+    view, getResourceLinks(view[pView.doc].head)).then(
+      () => client);
 }
 
 function onMutations(mutations) {
@@ -86,7 +90,7 @@ function onMutations(mutations) {
 }
 
 export function translateDocument(view, langs) {
-  const doc = view._doc;
+  const doc = view[pView.doc];
 
   if (langs[0].code === doc.documentElement.getAttribute('lang')) {
     return Promise.resolve().then(
