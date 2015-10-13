@@ -1,12 +1,19 @@
 'use strict';
 
 import { pseudo } from '../../lib/pseudo';
+import L20nParser from '../../lib/format/l20n/entries/parser';
+import PropertiesParser from '../../lib/format/properties/parser';
 import { Env } from '../../lib/env';
 import { LegacyEnv } from './legacy/env';
 import { getResourceLinks, translateFragment } from '../../bindings/html/dom';
 import { getDirection } from '../../bindings/html/langs';
 import { serializeContext } from './serialize';
 import { serializeLegacyContext } from './legacy/serialize';
+
+const parsers = {
+  l20n: L20nParser,
+  properties: PropertiesParser
+};
 
 export class View {
   constructor(htmloptimizer, fetch) {
@@ -18,9 +25,13 @@ export class View {
     // loading we can't rely on querySelector.
     this.isLegacy = !this.doc.querySelector('script[src*="l20n"]');
 
+    if (htmloptimizer.config.GAIA_OPTIMIZE === '1') {
+      removeParsers(this.doc);
+    }
+
     const EnvClass = this.isLegacy ? LegacyEnv : Env;
     this.env = new EnvClass(
-      htmloptimizer.config.GAIA_DEFAULT_LOCALE, fetch);
+      htmloptimizer.config.GAIA_DEFAULT_LOCALE, fetch, parsers);
     this.ctx = this.env.createContext(getResourceLinks(this.doc.head));
 
     // add the url of the currently processed webapp to all errors
@@ -129,4 +140,10 @@ function fetchContext(ctx, lang) {
   const sourceLang = { code: 'en-US', dir: 'ltr', src: 'app' };
   return Promise.all(
     [sourceLang, lang].map(lang => ctx.fetch([lang])));
+}
+
+function removeParsers(doc) {
+  Array.prototype.forEach.call(
+    doc.head.querySelectorAll('script[src*="l20n-parser"]'),
+    scriptEl => doc.head.removeChild(scriptEl));
 }

@@ -18,3 +18,8 @@ remote.service = new Service('l20n')
   .method('processString', (...args) => remote.processString(...args))
   .on('disconnect', clientId => remote.unregisterView(clientId))
   .listen(channel);
+
+window.L20n = {
+  remote,
+  parsers: {}
+};

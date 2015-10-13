@@ -1,5 +1,7 @@
 'use strict';
 
+/* global L20n */
+
 import { Env } from '../../lib/env';
 import { pseudo } from '../../lib/pseudo';
 import { documentReady } from './shims';
@@ -21,7 +23,9 @@ export class Remote {
     this.appVersion = meta.appVersion;
 
     this.env = new Env(
-      this.defaultLanguage, (...args) => this.fetch(this.appVersion, ...args));
+      this.defaultLanguage,
+      (...args) => this.fetch(this.appVersion, ...args),
+      L20n.parsers);
 
     return this.requestLanguages(requestedLangs);
   }

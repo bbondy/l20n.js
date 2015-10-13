@@ -2,6 +2,7 @@
 
 import assert from 'assert';
 import { isolate as i } from '../util';
+import PropertiesParser from '../../../src/lib/format/properties/parser';
 import { Env } from '../../../src/lib/env';
 import { fetch } from '../../../src/runtime/node/io';
 
@@ -9,14 +10,16 @@ const path = __dirname + '/..';
 const langs = [
   { code: 'en-US', src: 'app', dir: 'ltr' },
 ];
-
+const parsers = {
+  properties: PropertiesParser
+};
 
 describe('A simple context with one resource', function() {
   describe('ctx.resolveEntities', function() {
     var env, ctx;
 
     beforeEach(function(done) {
-      env = new Env('en-US', fetch);
+      env = new Env('en-US', fetch, parsers);
       ctx = env.createContext([path + '/fixtures/basic.properties']);
       ctx.fetch(langs).then(() => done(), done);
     });
@@ -139,7 +142,7 @@ describe('A simple context with one resource', function() {
     var env, ctx;
 
     beforeEach(function(done) {
-      env = new Env('en-US', fetch);
+      env = new Env('en-US', fetch, parsers);
       ctx = env.createContext([path + '/fixtures/basic.properties']);
       ctx.fetch(langs).then(() => done(), done);
     });

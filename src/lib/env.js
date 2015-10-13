@@ -1,20 +1,14 @@
 'use strict';
 
 import { Context } from './context';
-import PropertiesParser from './format/properties/parser';
-import L20nParser from './format/l20n/entries/parser';
 import { walkEntry, pseudo } from './pseudo';
 import { emit, addEventListener, removeEventListener } from './events';
 
-const parsers = {
-  properties: PropertiesParser,
-  l20n: L20nParser,
-};
-
 export class Env {
-  constructor(defaultLang, fetch) {
+  constructor(defaultLang, fetch, parsers) {
     this.defaultLang = defaultLang;
     this.fetch = fetch;
+    this.parsers = parsers;
 
     this._resLists = new Map();
     this._resCache = new Map();
@@ -41,7 +35,7 @@ export class Env {
   }
 
   _parse(syntax, lang, data) {
-    const parser = parsers[syntax];
+    const parser = this.parsers[syntax];
     if (!parser) {
       return data;
     }

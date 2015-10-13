@@ -1,6 +1,7 @@
 'use strict';
 
 import assert from 'assert';
+import PropertiesParser from '../../../src/lib/format/properties/parser';
 import { Env } from '../../../src/lib/env';
 import { fetch } from '../../../src/runtime/node/io';
 import { L10nError } from '../../../src/lib/errors';
@@ -9,6 +10,9 @@ const path = __dirname + '/..';
 const langs = [
   { code: 'en-US', src: 'app', dir: 'ltr' },
 ];
+const parsers = {
+  properties: PropertiesParser
+};
 
 describe('Caching resources', function() {
   var env, ctx1, ctx2;
@@ -17,7 +21,7 @@ describe('Caching resources', function() {
   var res3 = path + '/fixtures/missing.properties';
 
   beforeEach(function(done) {
-    env = new Env('en-US', fetch);
+    env = new Env('en-US', fetch, parsers);
     ctx1 = env.createContext([res1, res3]);
     ctx2 = env.createContext([res1, res2]);
     Promise.all([

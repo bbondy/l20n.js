@@ -2,6 +2,7 @@
 
 import assert from 'assert';
 import { isolate as i } from '../util';
+import PropertiesParser from '../../../src/lib/format/properties/parser';
 import { Env } from '../../../src/lib/env';
 import { fetch } from '../../../src/runtime/node/io';
 
@@ -10,6 +11,9 @@ const langs = [
   { code: 'pl', src: 'app', dir: 'ltr' },
   { code: 'en-US', src: 'app', dir: 'ltr' },
 ];
+const parsers = {
+  properties: PropertiesParser
+};
 
 function assertValue(promise, expected, done) {
   promise.then(function(value) {
@@ -21,7 +25,7 @@ describe('One fallback locale', function() {
   var env, ctx;
 
   beforeEach(function(done) {
-    env = new Env('en-US', fetch);
+    env = new Env('en-US', fetch, parsers);
     ctx = env.createContext([path + '/fixtures/{locale}.properties']);
     ctx.fetch(langs).then(() => done(), done);
   });

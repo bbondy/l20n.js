@@ -9,5 +9,10 @@ const remote = new Remote(fetch, broadcast, navigator.languages);
 window.addEventListener('languagechange', remote);
 document.addEventListener('additionallanguageschange', remote);
 
+window.L20n = {
+  remote,
+  parsers: {},
+};
+
 document.l10n = new View(
   new Client(remote), document);
